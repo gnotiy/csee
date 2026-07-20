@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>環保稽查數位紀錄系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+  --ink:#12312b;        /* 深墨綠：官方 + 環保 */
+  --ink-2:#2a4d44;
+  --teal:#0f6e5c;       /* 主色 */
+  --teal-d:#0a5245;
+  --paper:#f6f4ec;      /* 表單紙感 */
+  --line:#d7d2c4;
+  --line-d:#b7b1a1;
+  --bg:#eef0ec;
+  --card:#ffffff;
+  --muted:#6c7570;
+  --danger:#b23a2e;
+  --danger-bg:#fbeeec;
+  --ok:#0f6e5c;
+  --amber:#a86b12;
+  --focus:#1c8f78;
+  --shadow:0 1px 2px rgba(18,49,43,.06),0 6px 20px rgba(18,49,43,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  background:var(--bg);color:var(--ink);
+  -webkit-text-size-adjust:100%;line-height:1.5;
+}
+button{font-family:inherit}
+.mono{font-family:"JetBrains Mono",monospace}
+
+/* ---------- app shell ---------- */
+#app{max-width:760px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;padding-bottom:96px}
+header.topbar{
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(180deg,var(--ink) 0%,var(--ink-2) 100%);
+  color:#eaf2ef;padding:10px 16px calc(10px) 16px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 2px 10px rgba(18,49,43,.2);
+}
+.seal{
+  width:38px;height:38px;flex:0 0 38px;border-radius:50%;
+  border:2px solid #cfe3dc;display:grid;place-items:center;
+  font-family:"Noto Serif TC",serif;font-weight:900;font-size:15px;color:#e9f4f0;
+  background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.14),transparent 60%);
+}
+.topbar .t{flex:1;min-width:0}
+.topbar .t b{font-family:"Noto Serif TC",serif;font-weight:700;font-size:15px;letter-spacing:.5px;display:block;line-height:1.25}
+.topbar .t span{font-size:11px;color:#a9c6bd;letter-spacing:2px}
+.topbar .who{font-size:11px;text-align:right;color:#cfe3dc;line-height:1.35}
+.topbar .who b{display:block;font-size:13px;color:#fff;font-weight:700}
+
+/* step rail */
+.steprail{display:flex;gap:0;background:var(--card);border-bottom:1px solid var(--line);
+  position:sticky;top:58px;z-index:15;overflow-x:auto;scrollbar-width:none}
+.steprail::-webkit-scrollbar{display:none}
+.steprail .st{flex:1;min-width:78px;text-align:center;padding:9px 4px 8px;font-size:11px;color:var(--muted);
+  position:relative;white-space:nowrap;border-bottom:3px solid transparent}
+.steprail .st .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;
+  background:var(--line);color:#fff;font-size:11px;font-weight:700;margin-bottom:3px}
+.steprail .st.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:700}
+.steprail .st.active .n{background:var(--teal)}
+.steprail .st.done .n{background:var(--ink)}
+.steprail .st.done .n::after{content:"✓"}
+.steprail .st.done .n{font-size:0}
+.steprail .st.done .n::after{font-size:12px}
+
+main{padding:16px}
+.screen{display:none;animation:fade .25s ease}
+.screen.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+h2.sec{font-family:"Noto Serif TC",serif;font-size:18px;margin:2px 0 4px;color:var(--ink)}
+.sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+
+/* cards / lists */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.pick{display:flex;flex-direction:column;gap:10px}
+.pick .row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);
+  border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:.15s;box-shadow:var(--shadow)}
+.pick .row:hover{border-color:var(--teal);transform:translateY(-1px)}
+.pick .row .ico{width:40px;height:40px;flex:0 0 40px;border-radius:10px;background:var(--paper);
+  display:grid;place-items:center;font-size:20px;border:1px solid var(--line)}
+.pick .row .body{flex:1;min-width:0}
+.pick .row .body b{display:block;font-size:15px}
+.pick .row .body small{color:var(--muted);font-size:12px}
+.pick .row .arrow{color:var(--line-d);font-size:20px}
+.pick .row.disabled{opacity:.5;pointer-events:none}
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;background:var(--paper);
+  border:1px solid var(--line);color:var(--muted);margin-left:6px;vertical-align:middle}
+.tag.soon{background:#fff6e6;border-color:#f0dcae;color:var(--amber)}
+
+.searchbox{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
+  border-radius:11px;padding:9px 13px;margin-bottom:12px;box-shadow:var(--shadow)}
+.searchbox input{border:0;outline:0;flex:1;font-size:15px;background:transparent}
+.searchbox .mag{color:var(--muted)}
+
+/* form fields */
+.fld{margin-bottom:16px}
+.fld > label.q{display:block;font-weight:700;font-size:14px;margin-bottom:7px;color:var(--ink)}
+.fld > label.q .req{color:var(--danger);margin-left:3px}
+.inp{width:100%;border:1px solid var(--line-d);border-radius:10px;padding:11px 12px;font-size:15px;
+  background:var(--card);color:var(--ink);transition:.15s}
+.inp:focus{outline:2px solid var(--focus);outline-offset:0;border-color:var(--focus)}
+textarea.inp{min-height:70px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two-col-label{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center}
+.two-col-label span{font-size:13px;color:var(--muted);white-space:nowrap}
+
+/* choice options */
+.opts{display:flex;flex-direction:column;gap:2px}
+.opts.inline{flex-direction:row;flex-wrap:wrap;gap:8px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border:1px solid var(--line);
+  border-radius:9px;cursor:pointer;transition:.12s;background:var(--card);font-size:14px;line-height:1.45}
+.opt.indent{margin-left:22px}
+.opts.inline .opt{flex:0 0 auto}
+.opt:hover{border-color:var(--line-d);background:#fbfaf6}
+.opt.sel{border-color:var(--teal);background:#eaf5f1}
+.opt .box{width:19px;height:19px;flex:0 0 19px;border:2px solid var(--line-d);border-radius:5px;
+  margin-top:1px;display:grid;place-items:center;transition:.12s;color:#fff;font-size:13px;font-weight:900}
+.opt.mode-single .box{border-radius:50%}
+.opt.sel .box{background:var(--teal);border-color:var(--teal)}
+.opt.sel .box::after{content:"✓"}
+.opt .lab{flex:1}
+.opt .fills{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.opt .fills input{border:0;border-bottom:1.5px solid var(--line-d);background:transparent;
+  padding:2px 4px;font-size:13px;min-width:90px;font-family:inherit}
+.opt .fills input:focus{outline:0;border-bottom-color:var(--teal)}
+.opt .fills .fl{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
+
+.block-title{font-weight:700;font-size:14px;margin:20px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--ink);
+  color:var(--ink);font-family:"Noto Serif TC",serif}
+
+/* photos */
+.photogrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pslot{border:1.5px dashed var(--line-d);border-radius:12px;overflow:hidden;background:var(--card);position:relative}
+.pslot .ph{aspect-ratio:4/3;display:grid;place-items:center;color:var(--muted);cursor:pointer;position:relative;background:var(--paper)}
+.pslot .ph img{width:100%;height:100%;object-fit:cover}
+.pslot .ph .plus{text-align:center}
+.pslot .ph .plus .ic{font-size:26px}
+.pslot .ph .plus small{display:block;font-size:11px}
+.pslot .cap{padding:8px 10px;border-top:1px solid var(--line)}
+.pslot .cap input{border:0;outline:0;width:100%;font-size:13px;font-weight:600;text-align:center;background:transparent}
+.pslot .del{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;
+  background:rgba(18,49,43,.72);color:#fff;font-size:15px;cursor:pointer;display:none}
+.pslot.has .del{display:block}
+.addphoto{border:1.5px dashed var(--line-d);border-radius:12px;background:var(--card);color:var(--teal);
+  font-weight:700;padding:16px;cursor:pointer;font-size:14px;display:grid;place-items:center;min-height:60px}
+
+/* signatures */
+.sigwrap{margin-bottom:16px}
+.sighead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sighead b{font-size:14px}
+.sigpad{border:1.5px solid var(--line-d);border-radius:12px;background:#fff;touch-action:none;width:100%;height:150px;display:block}
+.sigpad.refused{opacity:.4}
+.sigtools{display:flex;gap:8px;margin-top:6px}
+.chip{font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--line-d);background:var(--card);
+  cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* nav buttons */
+.navbar{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--card);border-top:1px solid var(--line);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px;max-width:760px;margin:0 auto}
+.btn{flex:1;border:0;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s}
+.btn.pri{background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(15,110,92,.3)}
+.btn.pri:hover{background:var(--teal-d)}
+.btn.pri:disabled{background:var(--line-d);box-shadow:none;cursor:not-allowed}
+.btn.gho{background:var(--paper);color:var(--ink);border:1px solid var(--line);flex:0 0 auto;padding-left:20px;padding-right:20px}
+.btn.wide{flex:1}
+
+/* summary + result */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;padding:14px 16px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:600}
+.result{text-align:center;padding:30px 16px}
+.result .big{font-size:52px}
+.result h3{font-family:"Noto Serif TC",serif;font-size:22px;margin:8px 0 4px}
+.result p{color:var(--muted);margin:0 0 20px}
+.linkbtn{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;padding:12px 18px;font-weight:700;color:var(--teal);text-decoration:none;box-shadow:var(--shadow);margin:6px}
+.banner{border-radius:11px;padding:11px 14px;font-size:13px;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start}
+.banner.info{background:#eaf5f1;border:1px solid #bfe0d6;color:var(--teal-d)}
+.banner.warn{background:#fff6e6;border:1px solid #f0dcae;color:var(--amber)}
+
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;
+  padding:11px 20px;border-radius:24px;font-size:14px;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.25);opacity:0;transition:.3s;pointer-events:none}
+.toast.on{opacity:1}
+
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;
+  display:inline-block;animation:sp .7s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="seal">環</div>
+    <div class="t"><b>環保稽查數位紀錄系統</b><span id="agencyLine">嘉義市政府環境保護局</span></div>
+    <div class="who" id="whoBox" style="display:none"><span>稽查員</span><b id="whoName">—</b></div>
+  </header>
+
+  <div class="steprail" id="steprail"></div>
+
+  <main>
+    <!-- 1 稽查員 -->
+    <section class="screen" data-step="0" id="scr-inspector">
+      <h2 class="sec">選擇稽查員</h2>
+      <p class="sub">紀錄由此稽查員署名。名單同步自後端，可多位共用同一系統。</p>
+      <div class="searchbox"><span class="mag">🔍</span><input id="insSearch" placeholder="搜尋姓名或員編"></div>
+      <div class="pick" id="inspectorList"></div>
+    </section>
+
+    <!-- 2 稽查單 -->
+    <section class="screen" data-step="1" id="scr-form">
+      <h2 class="sec">選擇稽查單</h2>
+      <p class="sub">共 15 種表單。目前已上線者可直接使用，其餘依相同模式陸續套用。</p>
+      <div class="searchbox"><span class="mag">🔍</span><input id="formSearch" placeholder="搜尋表單名稱或編號"></div>
+      <div class="pick" id="formList"></div>
+    </section>
+
+    <!-- 3 稽查對象 -->
+    <section class="screen" data-step="2" id="scr-target">
+      <h2 class="sec">帶入稽查對象</h2>
+      <p class="sub">從列管名單挑選以自動帶入基本資料，或手動新增。帶入後仍可修改。</p>
+      <div class="searchbox"><span class="mag">🔍</span><input id="tgtSearch" placeholder="搜尋店名 / 地址 / 電話"></div>
+      <div class="pick" id="targetList"></div>
+      <div style="margin-top:12px"><button class="addphoto" id="btnNewTarget">＋ 手動新增稽查對象</button></div>
+    </section>
+
+    <!-- 4 填寫 -->
+    <section class="screen" data-step="3" id="scr-fill">
+      <h2 class="sec" id="fillTitle">現場稽查</h2>
+      <p class="sub" id="fillSub"></p>
+      <div id="fillBody"></div>
+    </section>
+
+    <!-- 5 照片 -->
+    <section class="screen" data-step="4" id="scr-photo">
+      <h2 class="sec">照片紀錄</h2>
+      <p class="sub">點擊欄位開啟相機或選取照片。照片會與稽查單合併於同一份 PDF。</p>
+      <div class="photogrid" id="photoGrid"></div>
+      <div style="margin-top:12px"><button class="addphoto" id="btnAddPhoto">＋ 新增照片欄位</button></div>
+      <div class="fld" style="margin-top:18px">
+        <label class="q">整體判定結果</label>
+        <div class="opts inline" id="conclusionOpts"></div>
+      </div>
+    </section>
+
+    <!-- 6 簽名 -->
+    <section class="screen" data-step="5" id="scr-sign">
+      <h2 class="sec">雙方簽名</h2>
+      <p class="sub">請於下方簽名區以手指或觸控筆簽署。</p>
+      <div id="signArea"></div>
+    </section>
+
+    <!-- 7 完成 -->
+    <section class="screen" data-step="6" id="scr-done">
+      <h2 class="sec">確認與產出</h2>
+      <p class="sub">確認摘要無誤後，產出單一 PDF（稽查單＋照片）並同步至彙整表。</p>
+      <div class="card" style="margin-bottom:16px"><dl class="kv" id="summaryKv"></dl></div>
+      <div id="doneResult"></div>
+    </section>
+  </main>
+
+  <nav class="navbar" id="navbar">
+    <button class="btn gho" id="btnBack">上一步</button>
+    <button class="btn pri wide" id="btnNext">下一步</button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   設定：後端同步端點（Google Apps Script Web App URL）
+   部署後把網址填在這；留空則僅產 PDF、不同步。
+============================================================ */
+const CONFIG = {
+  SYNC_URL: "",              // 例：https://script.google.com/macros/s/AKfy.../exec
+  UPLOAD_PDF: true,          // 是否把 PDF 上傳到 Drive
+  AGENCY: "嘉義市政府環境保護局"
+};
+
+/* ============================================================
+   離線草稿儲存：偵測 localStorage，不可用時退回記憶體
+   （在 claude.ai 預覽為記憶體模式；實際部署自動持久化）
+============================================================ */
+const store = (()=>{
+  let ok=false; try{const k="__t";localStorage.setItem(k,"1");localStorage.removeItem(k);ok=true;}catch(e){}
+  const mem={};
+  return {
+    get:(k)=>{ try{return ok?localStorage.getItem(k):(mem[k]??null);}catch(e){return mem[k]??null;} },
+    set:(k,v)=>{ try{ ok?localStorage.setItem(k,v):(mem[k]=v);}catch(e){mem[k]=v;} },
+    del:(k)=>{ try{ ok?localStorage.removeItem(k):(delete mem[k]);}catch(e){delete mem[k];} }
+  };
+})();
+
+/* ============================================================
+   稽查員 / 對象名單（實際部署由後端 GAS 回傳，這裡為離線後備）
+============================================================ */
+const INSPECTORS = [
+  {id:"A01", name:"翊穜", unit:"志欣環保工程"},
+  {id:"A02", name:"葉承典", unit:"志欣環保工程"},
+  {id:"A03", name:"稽查員三", unit:"嘉義市環保局"},
+];
+const TARGETS = [
+  {id:"T001", name:"義美股份有限公司 嘉義中山店", brand:"義美股份有限公司", phone:"05-2239371",
+   address:"嘉義市西區番社里中山路549號", chain:"y", placeType:"drink"},
+  {id:"T002", name:"7-ELEVEN 嘉北門市", brand:"統一超商", phone:"05-2000000",
+   address:"嘉義市東區忠孝路100號", chain:"y", placeType:"cvs"},
+  {id:"T003", name:"五十嵐 文化店", brand:"五十嵐", phone:"05-2111111",
+   address:"嘉義市西區文化路50號", chain:"y", placeType:"drink"},
+];
+
+/* ============================================================
+   表單登錄表：15 種稽查單
+   每張單 = 一份 schema。要新增其他 14 種，就照 FORM_CUP 的
+   結構再寫一份，加進 FORMS 陣列，引擎會自動渲染，不必改流程。
+============================================================ */
+const chip=(id,label)=>({id,label});
+
+const FORM_CUP = {
+  id:"cup", code:"F20250312113814", category:"源頭減量", icon:"🥤", ready:true,
+  title:"一次用飲料杯限制使用對象及實施方式稽查紀錄單",
+  legalRef:"廢棄物清理法第21條、第51條",
+  basic:[
+    {id:"name",   label:"名稱", type:"text", required:true, full:true},
+    {id:"chain",  label:"連鎖經營", type:"choice", mode:"single", inline:true,
+       options:[chip("y","是"),chip("n","否")]},
+    {id:"brand",  label:"品牌名稱", type:"text"},
+    {id:"phone",  label:"電話", type:"text"},
+    {id:"address",label:"地址", type:"text", full:true},
+    {id:"placeType", label:"場所類型", type:"choice", mode:"single", inline:true,
+       options:[chip("drink","飲料店"),chip("cvs","便利商店"),chip("fast","速食店"),chip("mart","超級市場")]},
+    {id:"reason", label:"查核原因", type:"choice", mode:"single", inline:true,
+       options:[chip("first","首次查核"),chip("recheck","複查"),chip("fix","限期改善查核")]},
+    {id:"material", label:"飲料杯使用材質", type:"choice", mode:"multi",
+       options:[chip("foam","發泡塑膠"),chip("nonfoam","非發泡塑膠"),chip("paper","紙容器"),chip("reuse","循環杯"),
+         {id:"bio",label:"生物可分解",fills:[{id:"mat",label:"材質"}]},
+         {id:"other",label:"其他",fills:[{id:"txt",label:""}]}]},
+    {id:"customers", label:"來客數量調查", type:"composite",
+       parts:[{id:"monthly",label:"每月來客數"},{id:"byo",label:"每月自備杯消費數"}]},
+  ],
+  sections:[
+    {id:"s1", title:"一、提供自備與未自備飲料杯新臺幣5元價差", type:"choice", mode:"multi",
+      options:[chip("ok","符合規定"),
+        chip("noprice","未提供新臺幣5元（含）以上價差"),
+        chip("nomark","現場未標示「自備飲料杯省＿元」或字體過小"),
+        chip("refuse","規避、妨礙或拒絕檢查")]},
+    {id:"s2", title:"二、提供循環杯借用服務（僅針對連鎖便利商店、連鎖速食店）", type:"choice", mode:"multi",
+      options:[chip("ok","符合規定"),
+        {id:"prov",label:"提供該項服務",indent:true},
+        {id:"noprov",label:"未提供該服務（非該品牌官網公布提供循環杯服務之門市）",indent:true},
+        chip("mismatch","未符合業者官網資訊提供循環杯借用服務"),
+        chip("nomark","現場未標示「免費借用循環杯」或字體過小"),
+        chip("lid","自113年1月1日起，所提供循環杯之杯蓋應可重複清洗"),
+        chip("refuse","規避、妨礙或拒絕檢查")]},
+    {id:"s3", title:"三、塑膠一次用飲料杯限制使用調查", type:"choice", mode:"multi",
+      options:[
+        {id:"nonplastic",label:"提供非塑膠類一次用飲料杯，材質為",
+          fills:[{id:"paper",label:"紙容器（打勾請填「紙容器」）"},{id:"bio",label:"生物可分解材質"}]},
+        chip("plastic","提供塑膠一次用飲料杯"),
+        chip("refuse","規避、妨礙或拒絕檢查")]},
+    {id:"s4", title:"（四）違規處理情形", type:"choice", mode:"multi",
+      options:[{id:"fine",label:"依廢棄物清理法第51條第3項規定，處新臺幣1,200元以上6,000元以下罰鍰，並限期完成改善",
+        fills:[{id:"deadline",label:"改善期限"}]}]},
+    {id:"s5", title:"（五）得暫時停止循環杯借用服務之情形", type:"choice", mode:"multi",
+      options:[chip("water","發生區域性缺水或傳染病，已完成報請中央主管機關備查"),
+        chip("wash","清洗設備故障等致無法清洗，且於36小時內向主管機關提出暫時提供一次用飲料杯之申請")]},
+  ],
+  opinions:[
+    {id:"inspectorOpinion", label:"稽查人員意見陳述"},
+    {id:"targetOpinion", label:"限制使用對象意見陳述"},
+  ],
+  signatures:[
+    {id:"inspector", label:"稽查人員"},
+    {id:"target", label:"限制使用對象", allowRefuse:true},
+    {id:"accompany", label:"會同單位人員", optional:true},
+  ],
+  photoSlots:["大門外觀","門牌","飲料杯樣式","自備環保杯折扣"],
+  conclusion:["符合規定","不符合規定","限期改善"],
+};
+
+/* 其餘 14 種：先登錄佔位，schema 補齊後把 ready 設為 true 即上線 */
+const FORM_STUBS = [
+  ["towel","F20250321115252","一次性旅宿用品稽查單","🧴"],
+  ["cosmetic","F20250402084421","化粧品與個人清潔用品販賣業者稽查作業紀錄單","🧼"],
+  ["bag","F20250402084515","垃圾強制分類破袋稽查","🗑️"],
+  ["community","F20250326153131","社區、機關、學校及團體資源回收情形稽查輔導紀錄表","🏫"],
+  ["mercury","F20250321115655","限制含汞產品輸入使用稽查紀錄表","⚗️"],
+  ["overpack","F20250402083443","限制產品過度包裝販賣業者稽查作業紀錄表","📦"],
+  ["tray","F20250325114433","限制塑膠類托盤及包裝盒使用稽查紀錄表","🍱"],
+  ["battery","F20250321154031","乾電池販賣業者稽查作業紀錄單","🔋"],
+  ["pvc","F20250325112205","禁用PVC食品容器販賣業者稽查作業紀錄單","🚱"],
+  ["plastic6","F20250721112041","一次用塑膠製品限制使用稽查記錄單","♻️"],
+  ["online","F20250325105242","網際網路購物包裝限制使用稽查作業紀錄表","🛒"],
+  ["noise","F20250324092010","噪音管制稽查紀錄工作單","🔊"],
+  ["construct","F20250317143136","營建工程污染管制巡查紀錄表","🏗️"],
+  ["hygiene","F20250703135543","環境衛生","🧹"],
+].map(([id,code,title,icon])=>({id,code,title,icon,category:"稽查表單",ready:false}));
+
+const FORMS = [FORM_CUP, ...FORM_STUBS];
+
+/* ============================================================
+   全域狀態
+============================================================ */
+const S = {
+  step:0,
+  inspector:null,
+  form:null,
+  target:null,
+  values:{},      // basic + section 勾選/填空
+  photos:[],      // {label, dataUrl}
+  signatures:{},  // id -> dataUrl | "REFUSE"
+  conclusion:null,
+  startTime:null,
+};
+const STEPS=["稽查員","稽查單","稽查對象","現場稽查","照片","簽名","完成"];
+
+/* ---------- 小工具 ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),2200);}
+function nowStamp(){const d=new Date();const p=n=>String(n).padStart(2,"0");
+  return {roc:`${d.getFullYear()-1911}/${p(d.getMonth()+1)}/${p(d.getDate())}`,
+    full:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}時${p(d.getMinutes())}分`,
+    iso:d.toISOString()};}
+
+/* ============================================================
+   步驟導覽
+============================================================ */
+function buildRail(){
+  const r=$("#steprail");r.innerHTML="";
+  STEPS.forEach((name,i)=>{
+    const d=el("div","st"+(i===S.step?" active":i<S.step?" done":""),`<span class="n">${i+1}</span><br>${name}`);
+    r.appendChild(d);
+  });
+}
+function goto(step){
+  S.step=step;
+  $$(".screen").forEach(s=>s.classList.toggle("on",+s.dataset.step===step));
+  buildRail();
+  $("#whoBox").style.display=S.inspector?"block":"none";
+  $("#whoName").textContent=S.inspector?S.inspector.name:"—";
+  const nav=$("#navbar"), back=$("#btnBack"), next=$("#btnNext");
+  nav.style.display= step===6 ? "none":"flex";
+  back.style.display= step===0 ? "none":"block";
+  next.textContent = step===5 ? "完成稽查" : "下一步";
+  // 各步進入時渲染
+  if(step===0) renderInspectors();
+  if(step===1) renderForms();
+  if(step===2) renderTargets();
+  if(step===3) renderFill();
+  if(step===4) renderPhotos();
+  if(step===5) renderSign();
+  if(step===6) renderDone();
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   步驟 1：稽查員
+============================================================ */
+function renderInspectors(q=""){
+  const box=$("#inspectorList");box.innerHTML="";
+  INSPECTORS.filter(i=>(i.name+i.id).includes(q)).forEach(ins=>{
+    const row=el("div","row"+(S.inspector&&S.inspector.id===ins.id?"":""),
+      `<div class="ico">👤</div><div class="body"><b>${ins.name}</b><small>員編 ${ins.id}・${ins.unit}</small></div><div class="arrow">›</div>`);
+    row.onclick=()=>{S.inspector=ins;S.startTime=nowStamp();toast(`稽查員：${ins.name}`);goto(1);};
+    box.appendChild(row);
+  });
+}
+$("#insSearch").oninput=e=>renderInspectors(e.target.value.trim());
+
+/* ============================================================
+   步驟 2：稽查單
+============================================================ */
+function renderForms(q=""){
+  const box=$("#formList");box.innerHTML="";
+  FORMS.filter(f=>(f.title+f.code).includes(q)).forEach(f=>{
+    const row=el("div","row"+(f.ready?"":" disabled"),
+      `<div class="ico">${f.icon||"📋"}</div>
+       <div class="body"><b>${f.title}${f.ready?"":'<span class="tag soon">建置中</span>'}</b>
+       <small class="mono">${f.code}</small></div><div class="arrow">›</div>`);
+    if(f.ready) row.onclick=()=>{S.form=f;toast(f.title);goto(2);};
+    box.appendChild(row);
+  });
+}
+$("#formSearch").oninput=e=>renderForms(e.target.value.trim());
+
+/* ============================================================
+   步驟 3：稽查對象
+============================================================ */
+function renderTargets(q=""){
+  const box=$("#targetList");box.innerHTML="";
+  TARGETS.filter(t=>(t.name+t.address+t.phone).includes(q)).forEach(t=>{
+    const row=el("div","row",
+      `<div class="ico">🏪</div><div class="body"><b>${t.name}</b><small>${t.address}</small></div><div class="arrow">›</div>`);
+    row.onclick=()=>{applyTarget(t);toast(`已帶入：${t.name}`);goto(3);};
+    box.appendChild(row);
+  });
+}
+function applyTarget(t){
+  S.target=t;
+  // 把對象基本資料帶入 values
+  ["name","brand","phone","address"].forEach(k=>{if(t[k])S.values[k]=t[k];});
+  if(t.chain) S.values.chain={[t.chain]:true};
+  if(t.placeType) S.values.placeType={[t.placeType]:true};
+}
+$("#tgtSearch").oninput=e=>renderTargets(e.target.value.trim());
+$("#btnNewTarget").onclick=()=>{S.target={id:"NEW",name:"（手動新增）"};goto(3);};
+
+/* ============================================================
+   步驟 4：動態渲染稽查單
+============================================================ */
+function getV(id){return S.values[id];}
+function setText(id,v){S.values[id]=v;}
+function toggleChoice(fieldId,optId,single){
+  const cur=S.values[fieldId]||{};
+  if(single){S.values[fieldId]={[optId]:true};}
+  else{cur[optId]=!cur[optId];S.values[fieldId]=cur;}
+}
+function isSel(fieldId,optId){return !!(S.values[fieldId]&&S.values[fieldId][optId]);}
+function setFill(fieldId,optId,fillId,v){
+  const key=`${fieldId}.${optId}.${fillId}`;S.values["_fill_"+key]=v;
+}
+function getFill(fieldId,optId,fillId){return S.values["_fill_"+`${fieldId}.${optId}.${fillId}`]||"";}
+
+function renderChoiceField(f){
+  const wrap=el("div","fld");
+  if(f.label) wrap.appendChild(el("label","q",f.label+(f.required?'<span class="req">*</span>':"")));
+  const opts=el("div","opts"+(f.inline?" inline":""));
+  f.options.forEach(o=>{
+    const sel=isSel(f.id,o.id);
+    const opt=el("label","opt mode-"+(f.mode)+(o.indent?" indent":"")+(sel?" sel":""));
+    opt.innerHTML=`<span class="box"></span><span class="lab">${o.label}</span>`;
+    if(o.fills){
+      const fbox=el("div","fills");
+      o.fills.forEach(fl=>{
+        const w=el("span","fl",fl.label?`${fl.label}：`:"");
+        const inp=el("input");inp.value=getFill(f.id,o.id,fl.id);inp.placeholder=fl.label||"";
+        inp.oninput=ev=>setFill(f.id,o.id,fl.id,ev.target.value);
+        inp.onclick=ev=>ev.preventDefault();
+        w.appendChild(inp);fbox.appendChild(w);
+      });
+      opt.querySelector(".lab").appendChild(fbox);
+    }
+    opt.onclick=ev=>{
+      if(ev.target.tagName==="INPUT")return;
+      ev.preventDefault();
+      toggleChoice(f.id,o.id,f.mode==="single");
+      renderFill();
+    };
+    opts.appendChild(opt);
+  });
+  wrap.appendChild(opts);
+  return wrap;
+}
+function renderTextField(f){
+  const wrap=el("div","fld"+(f.full?"":""));
+  wrap.appendChild(el("label","q",f.label+(f.required?'<span class="req">*</span>':"")));
+  const inp=el(f.type==="textarea"?"textarea":"input","inp");
+  inp.value=getV(f.id)||"";inp.placeholder=f.placeholder||"";
+  if(f.type==="textarea")inp.setAttribute("rows","3");
+  inp.oninput=e=>setText(f.id,e.target.value);
+  wrap.appendChild(inp);
+  return wrap;
+}
+function renderComposite(f){
+  const wrap=el("div","fld");
+  wrap.appendChild(el("label","q",f.label));
+  const g=el("div","grid2");
+  f.parts.forEach(p=>{
+    const cell=el("div","two-col-label");
+    cell.appendChild(el("span",null,p.label));
+    const inp=el("input","inp");inp.type="number";inp.inputMode="numeric";
+    inp.value=getV(f.id+"."+p.id)||"";
+    inp.oninput=e=>setText(f.id+"."+p.id,e.target.value);
+    cell.appendChild(inp);g.appendChild(cell);
+  });
+  wrap.appendChild(g);
+  return wrap;
+}
+function renderField(f){
+  if(f.type==="choice")return renderChoiceField(f);
+  if(f.type==="composite")return renderComposite(f);
+  return renderTextField(f);
+}
+function renderFill(){
+  const F=S.form;
+  $("#fillTitle").textContent=F.title;
+  $("#fillSub").innerHTML=`稽查時間 ${S.startTime?S.startTime.full:""}　<span class="mono">${F.code}</span>`;
+  const body=$("#fillBody");body.innerHTML="";
+  body.appendChild(el("div","block-title","限制使用對象基本資料"));
+  F.basic.forEach(f=>body.appendChild(renderField(f)));
+  body.appendChild(el("div","block-title","現場稽查及處理情形"));
+  F.sections.forEach(s=>{
+    body.appendChild(renderChoiceField({...s,label:s.title,required:false}));
+  });
+  body.appendChild(el("div","block-title","意見陳述"));
+  F.opinions.forEach(o=>body.appendChild(renderTextField({...o,type:"textarea"})));
+}
+
+/* ============================================================
+   步驟 5：照片
+============================================================ */
+function ensurePhotoSlots(){
+  if(S.photos.length)return;
+  S.photos=(S.form.photoSlots||[]).map(l=>({label:l,dataUrl:null}));
+}
+function renderPhotos(){
+  ensurePhotoSlots();
+  const grid=$("#photoGrid");grid.innerHTML="";
+  S.photos.forEach((p,i)=>{
+    const slot=el("div","pslot"+(p.dataUrl?" has":""));
+    slot.innerHTML=`
+      <div class="ph">${p.dataUrl?`<img src="${p.dataUrl}">`:`<div class="plus"><div class="ic">📷</div><small>點擊拍照 / 選圖</small></div>`}
+        <button class="del">✕</button></div>
+      <div class="cap"><input value="${p.label||""}" placeholder="照片說明"></div>`;
+    const ph=slot.querySelector(".ph");
+    ph.onclick=(e)=>{ if(e.target.classList.contains("del"))return; pickPhoto(i); };
+    slot.querySelector(".del").onclick=(e)=>{e.stopPropagation();S.photos[i].dataUrl=null;renderPhotos();};
+    slot.querySelector(".cap input").oninput=e=>S.photos[i].label=e.target.value;
+    grid.appendChild(slot);
+  });
+  // 判定
+  const co=$("#conclusionOpts");co.innerHTML="";
+  (S.form.conclusion||[]).forEach(c=>{
+    const opt=el("label","opt mode-single"+(S.conclusion===c?" sel":""));
+    opt.innerHTML=`<span class="box"></span><span class="lab">${c}</span>`;
+    opt.onclick=e=>{e.preventDefault();S.conclusion=c;renderPhotos();};
+    co.appendChild(opt);
+  });
+}
+let _photoIdx=null,_fileInput=null;
+function pickPhoto(i){
+  _photoIdx=i;
+  if(!_fileInput){
+    _fileInput=document.createElement("input");
+    _fileInput.type="file";_fileInput.accept="image/*";_fileInput.capture="environment";
+    _fileInput.style.display="none";document.body.appendChild(_fileInput);
+    _fileInput.onchange=async()=>{
+      const file=_fileInput.files[0];if(!file)return;
+      const url=await compressImage(file,1280,.72);
+      S.photos[_photoIdx].dataUrl=url;_fileInput.value="";renderPhotos();
+    };
+  }
+  _fileInput.click();
+}
+function compressImage(file,maxW,q){
+  return new Promise(res=>{
+    const img=new Image();const r=new FileReader();
+    r.onload=()=>{img.onload=()=>{
+      const sc=Math.min(1,maxW/img.width);
+      const c=document.createElement("canvas");c.width=img.width*sc;c.height=img.height*sc;
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      res(c.toDataURL("image/jpeg",q));
+    };img.src=r.result;};
+    r.readAsDataURL(file);
+  });
+}
+$("#btnAddPhoto").onclick=()=>{S.photos.push({label:"補充照片",dataUrl:null});renderPhotos();};
+
+/* ============================================================
+   步驟 6：簽名板
+============================================================ */
+function renderSign(){
+  const area=$("#signArea");area.innerHTML="";
+  S.form.signatures.forEach(sig=>{
+    const wrap=el("div","sigwrap");
+    wrap.innerHTML=`<div class="sighead"><b>${sig.label}${sig.optional?"（選填）":""}</b></div>`;
+    const canvas=el("canvas","sigpad");canvas.width=680;canvas.height=150;
+    wrap.appendChild(canvas);
+    const tools=el("div","sigtools");
+    const clr=el("button","chip","清除");
+    tools.appendChild(clr);
+    let refuseBtn=null;
+    if(sig.allowRefuse){
+      refuseBtn=el("button","chip","拒簽");
+      tools.appendChild(refuseBtn);
+    }
+    wrap.appendChild(tools);
+    area.appendChild(wrap);
+    initPad(canvas,sig.id);
+    clr.onclick=()=>{clearPad(canvas,sig.id);if(refuseBtn)refuseBtn.classList.remove("on");canvas.classList.remove("refused");};
+    if(refuseBtn) refuseBtn.onclick=()=>{
+      const on=!refuseBtn.classList.contains("on");
+      refuseBtn.classList.toggle("on",on);
+      canvas.classList.toggle("refused",on);
+      if(on){clearPad(canvas,sig.id);S.signatures[sig.id]="REFUSE";}
+      else{S.signatures[sig.id]=null;}
+    };
+    // 還原既有簽名
+    if(S.signatures[sig.id]&&S.signatures[sig.id]!=="REFUSE"){
+      const ctx=canvas.getContext("2d");const im=new Image();
+      im.onload=()=>ctx.drawImage(im,0,0,canvas.width,canvas.height);im.src=S.signatures[sig.id];
+    }
+    if(S.signatures[sig.id]==="REFUSE"&&refuseBtn){refuseBtn.classList.add("on");canvas.classList.add("refused");}
+  });
+}
+function initPad(canvas,id){
+  const ctx=canvas.getContext("2d");ctx.lineWidth=2.4;ctx.lineCap="round";ctx.strokeStyle="#12312b";
+  let drawing=false,last=null;
+  const pos=e=>{const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;
+    return {x:(t.clientX-r.left)*canvas.width/r.width,y:(t.clientY-r.top)*canvas.height/r.height};};
+  const start=e=>{if(canvas.classList.contains("refused"))return;drawing=true;last=pos(e);e.preventDefault();};
+  const move=e=>{if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;e.preventDefault();};
+  const end=()=>{if(!drawing)return;drawing=false;S.signatures[id]=canvas.toDataURL("image/png");};
+  canvas.addEventListener("pointerdown",start);canvas.addEventListener("pointermove",move);
+  window.addEventListener("pointerup",end);
+}
+function clearPad(canvas,id){canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);S.signatures[id]=null;}
+
+/* ============================================================
+   步驟 7：摘要 + 產 PDF + 同步
+============================================================ */
+function renderDone(){
+  const kv=$("#summaryKv");kv.innerHTML="";
+  const rows=[
+    ["稽查單",S.form.title],
+    ["稽查員",S.inspector.name],
+    ["稽查對象",S.values.name||"—"],
+    ["地址",S.values.address||"—"],
+    ["稽查時間",S.startTime.full],
+    ["照片",`${S.photos.filter(p=>p.dataUrl).length} 張`],
+    ["判定結果",S.conclusion||"未填"],
+  ];
+  rows.forEach(([k,v])=>{kv.appendChild(el("dt",null,k));kv.appendChild(el("dd",null,v));});
+  const r=$("#doneResult");
+  r.innerHTML=`
+    <div class="banner ${CONFIG.SYNC_URL?"info":"warn"}">
+      <span>${CONFIG.SYNC_URL?"ℹ️":"⚠️"}</span>
+      <div>${CONFIG.SYNC_URL?"完成後將產出單一 PDF（稽查單＋照片），並同步至彙整表。":"目前未設定同步端點，將只在本機產出 PDF。部署時把 GAS 網址填入程式最上方 CONFIG.SYNC_URL 即可自動同步。"}</div>
+    </div>
+    <button class="btn pri wide" id="btnFinish" style="width:100%">產出 PDF 並同步</button>
+    <div id="finishOut" style="margin-top:16px"></div>`;
+  $("#btnFinish").onclick=finish;
+}
+
+async function finish(){
+  const btn=$("#btnFinish");btn.disabled=true;btn.innerHTML='<span class="spin"></span> 產出中…';
+  try{
+    const pdf=await buildPDF();
+    const blob=pdf.output("blob");
+    const url=URL.createObjectURL(blob);
+    const fname=`${S.form.code}_${(S.values.name||"稽查").replace(/\s/g,"")}_${S.startTime.roc.replace(/\//g,"")}.pdf`;
+    let synced=false,pdfLink=null;
+    if(CONFIG.SYNC_URL){
+      btn.innerHTML='<span class="spin"></span> 同步中…';
+      try{
+        const res=await syncToBackend(CONFIG.UPLOAD_PDF?pdf.output("datauristring"):null,fname);
+        synced=true;pdfLink=res&&res.pdfUrl;
+      }catch(e){console.error(e);}
+    }
+    $("#finishOut").innerHTML=`
+      <div class="result">
+        <div class="big">✅</div>
+        <h3>稽查完成</h3>
+        <p>${synced?"已同步至彙整表":"PDF 已產出"}</p>
+        <div>
+          <a class="linkbtn" id="dl" download="${fname}" href="${url}">⬇️ 下載 PDF</a>
+          ${pdfLink?`<a class="linkbtn" target="_blank" href="${pdfLink}">☁️ 雲端 PDF</a>`:""}
+        </div>
+        <div style="margin-top:20px"><button class="btn gho" id="again" style="padding:12px 26px">＋ 開始新的稽查</button></div>
+      </div>`;
+    $("#again").onclick=resetAll;
+    if(!synced&&CONFIG.SYNC_URL) toast("同步失敗，PDF 已在本機產出");
+  }catch(err){
+    console.error(err);toast("產出失敗："+err.message);btn.disabled=false;btn.textContent="重新產出 PDF 並同步";
+  }
+}
+
+function resetAll(){
+  Object.assign(S,{step:0,form:null,target:null,values:{},photos:[],signatures:{},conclusion:null,startTime:null});
+  goto(1); // 保留已選稽查員，直接回到選單
+}
+
+/* ---------- 同步（POST 至 GAS） ---------- */
+async function syncToBackend(pdfDataUri,fname){
+  const payload={
+    formId:S.form.id, formCode:S.form.code, formTitle:S.form.title,
+    inspector:S.inspector, target:S.target,
+    startTime:S.startTime.full, iso:S.startTime.iso,
+    values:S.values, conclusion:S.conclusion,
+    photos:S.photos.filter(p=>p.dataUrl).map(p=>({label:p.label,dataUrl:p.dataUrl})),
+    signatures:S.signatures,
+    pdf:pdfDataUri?{name:fname,dataUri:pdfDataUri}:null,
+  };
+  const res=await fetch(CONFIG.SYNC_URL,{
+    method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+/* ============================================================
+   PDF 產出：單一檔案 = 官方稽查單 + 照片頁
+   作法：把「列印版 HTML」逐頁交給 html2canvas → jsPDF(A4)
+   （用瀏覽器字型渲染，中文不會亂碼）
+============================================================ */
+function mark(sel){return sel?"■":"□";}
+function fillOf(fid,oid,flid){const v=getFill(fid,oid,flid);return v?`<u>&nbsp;${v}&nbsp;</u>`:"＿＿＿";}
+
+function officialFormHTML(){
+  const F=S.form,V=S.values;
+  const chainY=isSel("chain","y"),chainN=isSel("chain","n");
+  const pt=(id,l)=>`${mark(isSel("placeType",id))} ${l}`;
+  const rz=(id,l)=>`${mark(isSel("reason",id))} ${l}`;
+  const mt=(id,l)=>`${mark(isSel("material",id))} ${l}`;
+  const optLine=(fid,o)=>{
+    let s=`${mark(isSel(fid,o.id))} ${o.label}`;
+    if(o.fills&&isSel(fid,o.id)) s+=" "+o.fills.map(fl=>`${fl.label?fl.label+"：":""}${fillOf(fid,o.id,fl.id)}`).join("　");
+    return `<div class="ol${o.indent?" ind":""}">${s}</div>`;
+  };
+  const section=(s)=>`<tr><td class="lab">${s.title.replace(/^.、|^（.）/,m=>m)}</td>
+     <td class="val">${s.options.map(o=>optLine(s.id,o)).join("")}</td></tr>`;
+
+  const sigCell=(id)=>{
+    const v=S.signatures[id];
+    if(v==="REFUSE")return `<span style="color:#b23a2e">拒簽</span>`;
+    if(v&&v!=="REFUSE")return `<img src="${v}" style="height:46px">`;
+    return "";
+  };
+
+  return `<div class="pdfpage">
+    <div class="ph1">${CONFIG.AGENCY}</div>
+    <div class="ph2">${F.title}</div>
+    <table class="ftab">
+      <tr><td class="lab" style="width:74px">稽查時間</td><td colspan="3">${S.startTime.full}</td></tr>
+      <tr><td class="lab">名稱</td><td>${V.name||""}</td>
+          <td class="lab" style="width:66px">連鎖經營</td><td style="width:120px">${mark(chainY)} 是　${mark(chainN)} 否</td></tr>
+      <tr><td class="lab">品牌名稱</td><td>${V.brand||""}</td><td class="lab">電話</td><td>${V.phone||""}</td></tr>
+      <tr><td class="lab">地址</td><td colspan="3">${V.address||""}</td></tr>
+      <tr><td class="lab">場所類型</td><td colspan="3">${pt("drink","飲料店")}　${pt("cvs","便利商店")}　${pt("fast","速食店")}　${pt("mart","超級市場")}</td></tr>
+      <tr><td class="lab">查核原因</td><td colspan="3">${rz("first","首次查核")}　${rz("recheck","複查")}　${rz("fix","限期改善查核")}</td></tr>
+      <tr><td class="lab">飲料杯使用材質</td><td colspan="3">
+        ${mt("foam","發泡塑膠")}　${mt("nonfoam","非發泡塑膠")}　${mt("paper","紙容器")}　${mt("reuse","循環杯")}<br>
+        ${mark(isSel("material","bio"))} 生物可分解，材質：${isSel("material","bio")?fillOf("material","bio","mat"):"＿＿＿"}　
+        ${mark(isSel("material","other"))} 其他：${isSel("material","other")?fillOf("material","other","txt"):"＿＿＿"}</td></tr>
+      <tr><td class="lab">來客數量調查</td><td colspan="3">每月來客數：${V["customers.monthly"]||"＿＿"}、每月自備杯消費數：${V["customers.byo"]||"＿＿"}</td></tr>
+      ${F.sections.map(section).join("")}
+      <tr><td class="lab">稽查人員意見陳述</td><td colspan="3" style="min-height:34px">${(V.inspectorOpinion||"").replace(/\n/g,"<br>")}</td></tr>
+      <tr><td class="lab">限制使用對象意見陳述</td><td colspan="3">${(V.targetOpinion||"").replace(/\n/g,"<br>")}</td></tr>
+      <tr><td class="lab">判定結果</td><td colspan="3"><b>${S.conclusion||""}</b></td></tr>
+      <tr><td class="lab">稽查人員簽名</td><td>${sigCell("inspector")}</td>
+          <td class="lab">限制使用對象簽名</td><td>${sigCell("target")}</td></tr>
+      <tr><td class="lab">會同單位人員簽名</td><td colspan="3">${sigCell("accompany")}</td></tr>
+    </table>
+    <div class="pfoot">稽查員 ${S.inspector.name}（${S.inspector.id}）　列印時間 ${nowStamp().full}</div>
+  </div>`;
+}
+
+function photoPagesHTML(){
+  const ph=S.photos.filter(p=>p.dataUrl);
+  if(!ph.length)return"";
+  let pages="",per=4;
+  for(let i=0;i<ph.length;i+=per){
+    const group=ph.slice(i,i+per);
+    pages+=`<div class="pdfpage">
+      <div class="ph1">${CONFIG.AGENCY}</div>
+      <div class="ph2">${S.form.title}　照片紀錄</div>
+      <table class="ptab"><tr>
+        <td class="pinfo" colspan="2">名稱：${S.values.name||""}　日期：${S.startTime.roc}</td></tr>
+        <tr><td class="pinfo" colspan="2">地址：${S.values.address||""}</td></tr>
+        ${chunk2(group).map(pair=>`<tr>${pair.map(p=>`<td class="pcell"><div class="pimg"><img src="${p.dataUrl}"></div><div class="pcap">${p.label||""}</div></td>`).join("")}${pair.length<2?'<td class="pcell"></td>':""}</tr>`).join("")}
+      </table>
+      <div class="pfoot" style="text-align:center">判定：${S.conclusion||""}</div>
+    </div>`;
+  }
+  return pages;
+}
+function chunk2(a){const o=[];for(let i=0;i<a.length;i+=2)o.push(a.slice(i,i+2));return o;}
+
+async function buildPDF(){
+  const { jsPDF } = window.jspdf;
+  const holder=el("div");
+  holder.style.cssText="position:fixed;left:-9999px;top:0;width:794px;background:#fff";
+  holder.innerHTML=`<style>
+    .pdfpage{width:794px;min-height:1123px;padding:40px 44px;background:#fff;color:#111;font-family:'Noto Serif TC','Noto Sans TC',serif;box-sizing:border-box}
+    .ph1{text-align:center;font-weight:900;font-size:19px}
+    .ph2{text-align:center;font-weight:700;font-size:17px;margin:2px 0 14px;border-bottom:0}
+    .ftab{width:100%;border-collapse:collapse;font-family:'Noto Sans TC',sans-serif;font-size:12.5px}
+    .ftab td{border:1px solid #000;padding:5px 7px;vertical-align:top;line-height:1.55}
+    .ftab td.lab{background:#f0f0f0;font-weight:700;white-space:nowrap;width:120px}
+    .ol{margin:1px 0}.ol.ind{margin-left:20px}
+    .pfoot{margin-top:10px;font-size:10.5px;color:#555;font-family:'Noto Sans TC',sans-serif}
+    .ptab{width:100%;border-collapse:collapse;font-family:'Noto Sans TC',sans-serif;font-size:12.5px}
+    .ptab td{border:1px solid #000;padding:4px 6px}
+    .pinfo{font-weight:600}
+    .pcell{width:50%;text-align:center;vertical-align:top}
+    .pimg{height:230px;display:flex;align-items:center;justify-content:center;background:#fafafa}
+    .pimg img{max-width:100%;max-height:230px;object-fit:contain}
+    .pcap{font-weight:700;padding:6px 0}
+  </style>${officialFormHTML()}${photoPagesHTML()}`;
+  document.body.appendChild(holder);
+  const pages=$$(".pdfpage",holder);
+  const pdf=new jsPDF("p","mm","a4");
+  const W=210,H=297;
+  for(let i=0;i<pages.length;i++){
+    const canvas=await html2canvas(pages[i],{scale:2,useCORS:true,backgroundColor:"#ffffff"});
+    const img=canvas.toDataURL("image/jpeg",0.85);
+    const h=Math.min(H,canvas.height*W/canvas.width);
+    if(i>0)pdf.addPage();
+    pdf.addImage(img,"JPEG",0,0,W,h);
+  }
+  document.body.removeChild(holder);
+  return pdf;
+}
+
+/* ============================================================
+   驗證 + 導覽鈕
+============================================================ */
+function validateStep(){
+  if(S.step===3){
+    if(!S.values.name){toast("請填寫稽查對象名稱");return false;}
+  }
+  return true;
+}
+$("#btnNext").onclick=()=>{
+  if(!validateStep())return;
+  if(S.step<6) goto(S.step+1);
+};
+$("#btnBack").onclick=()=>{ if(S.step>0) goto(S.step-1); };
+
+/* 啟動 */
+$("#agencyLine").textContent=CONFIG.AGENCY;
+goto(0);
+</script>
+</body>
+</html>
