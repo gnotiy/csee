@@ -10,16 +10,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root{
-  --ink:#12294a;--brand:#1d5fd6;--brand-d:#164bad;--paper:#eef3fb;--line:#d3ddec;--line-d:#b3c3dc;
-  --bg:#eef2f8;--card:#ffffff;--muted:#5b6b83;--danger:#c33a2e;--focus:#2f7ae5;
-  --topbar:#12294a;--topbar-2:#1c3d6b;--topbar-tx:#eaf1fb;--topbar-sub:#9db6d8;
-  --shadow:0 1px 2px rgba(18,41,74,.06),0 6px 20px rgba(18,41,74,.08);
+  /* 介面：無彩度灰階；按鈕：維持藍色（--brand 系列） */
+  --ink:#1f2328;--brand:#1d5fd6;--brand-d:#164bad;--paper:#f0f1f3;--line:#e0e2e6;--line-d:#c4c8ce;
+  --bg:#f4f5f7;--card:#ffffff;--muted:#6b7178;--danger:#c33a2e;--focus:#9aa0a7;
+  --sel:rgba(0,0,0,.055);--topbar:#2b2f36;--topbar-2:#3a3f47;--topbar-tx:#f0f1f3;--topbar-sub:#a8adb4;
+  --shadow:0 1px 2px rgba(20,22,26,.06),0 6px 20px rgba(20,22,26,.08);
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --ink:#e7eef9;--brand:#4f8cf7;--brand-d:#3f78de;--paper:#1b2b44;--line:#2a3a56;--line-d:#3d5177;
-    --bg:#0d1626;--card:#152238;--muted:#93a4c0;--danger:#ff6b5c;--focus:#5b9bff;
-    --topbar:#0a1424;--topbar-2:#132844;--topbar-tx:#eaf1fb;--topbar-sub:#89a3c7;
+    --ink:#e6e8ea;--brand:#4f8cf7;--brand-d:#3f78de;--paper:#24262b;--line:#33363c;--line-d:#474b52;
+    --bg:#141518;--card:#1d1f23;--muted:#9aa0a7;--danger:#ff6b5c;--focus:#6b7178;
+    --sel:rgba(255,255,255,.07);--topbar:#0f1013;--topbar-2:#26282d;--topbar-tx:#e6e8ea;--topbar-sub:#8b9098;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
   }
 }
@@ -28,16 +29,18 @@ html,body{margin:0;padding:0}
 body{font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;line-height:1.5;}
 button{font-family:inherit}
 .mono{font-family:"JetBrains Mono",monospace}
+/* 裝飾性 emoji 去彩度 */
+.iconbtn,.searchbox .mag,.pick .row .ico,.pslot .plus .ic{filter:grayscale(1)}
 #app{max-width:760px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;padding-bottom:96px}
-header.topbar{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--topbar) 0%,var(--topbar-2) 100%);color:var(--topbar-tx);padding:10px 14px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 10px rgba(10,20,36,.25);}
-.seal{width:38px;height:38px;flex:0 0 38px;border-radius:50%;border:2px solid #9fc0ee;display:grid;place-items:center;font-family:"Noto Serif TC",serif;font-weight:900;font-size:15px;color:#eaf1fb;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.16),transparent 60%);}
+header.topbar{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--topbar) 0%,var(--topbar-2) 100%);color:var(--topbar-tx);padding:10px 14px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 10px rgba(15,16,19,.28);}
+.seal{width:38px;height:38px;flex:0 0 38px;border-radius:50%;border:2px solid #b8bcc2;display:grid;place-items:center;font-family:"Noto Serif TC",serif;font-weight:900;font-size:15px;color:#f0f1f3;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.14),transparent 60%);}
 .topbar .t{flex:1;min-width:0}
 .topbar .t b{font-family:"Noto Serif TC",serif;font-weight:700;font-size:15px;letter-spacing:.5px;display:block;line-height:1.25}
 .topbar .t span{font-size:11px;color:var(--topbar-sub);letter-spacing:2px}
 .topbar .actions{display:flex;align-items:center;gap:8px}
-.iconbtn{background:rgba(255,255,255,.12);border:0;color:var(--topbar-tx);width:36px;height:36px;border-radius:10px;font-size:16px;cursor:pointer;display:none;place-items:center}
+.iconbtn{background:rgba(255,255,255,.14);border:0;color:var(--topbar-tx);width:36px;height:36px;border-radius:10px;font-size:16px;cursor:pointer;display:none;place-items:center}
 .iconbtn.show{display:grid}
-.iconbtn:hover{background:rgba(255,255,255,.22)}
+.iconbtn:hover{background:rgba(255,255,255,.24)}
 .whoName{font-size:12px;color:var(--topbar-sub);text-align:right;line-height:1.2;display:none}
 .whoName.show{display:block}
 .whoName b{display:block;color:#fff;font-size:13px}
@@ -45,9 +48,9 @@ header.topbar{position:sticky;top:0;z-index:20;background:linear-gradient(180deg
 .steprail::-webkit-scrollbar{display:none}
 .steprail .st{flex:1;min-width:76px;text-align:center;padding:9px 4px 8px;font-size:11px;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent}
 .steprail .st .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--line-d);color:#fff;font-size:11px;font-weight:700;margin-bottom:3px}
-.steprail .st.active{color:var(--brand);border-bottom-color:var(--brand);font-weight:700}
-.steprail .st.active .n{background:var(--brand)}
-.steprail .st.done .n{background:var(--brand-d);font-size:0}
+.steprail .st.active{color:var(--ink);border-bottom-color:var(--ink);font-weight:700}
+.steprail .st.active .n{background:var(--ink)}
+.steprail .st.done .n{background:var(--muted);font-size:0}
 .steprail .st.done .n::after{content:"✓";font-size:12px}
 main{padding:16px}
 .screen{display:none;animation:fade .25s ease}
@@ -57,15 +60,17 @@ h2.sec{font-family:"Noto Serif TC",serif;font-size:18px;margin:2px 0 4px}
 .sub{color:var(--muted);font-size:13px;margin:0 0 16px}
 .pick{display:flex;flex-direction:column;gap:10px}
 .pick .row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:.15s;box-shadow:var(--shadow)}
-.pick .row:hover{border-color:var(--brand);transform:translateY(-1px)}
+.pick .row:hover{border-color:var(--line-d);transform:translateY(-1px)}
 .pick .row .ico{width:40px;height:40px;flex:0 0 40px;border-radius:10px;background:var(--paper);display:grid;place-items:center;font-size:20px;border:1px solid var(--line)}
 .pick .row .body{flex:1;min-width:0}
 .pick .row .body b{display:block;font-size:15px}
 .pick .row .body small{color:var(--muted);font-size:12px}
 .pick .row .arrow{color:var(--line-d);font-size:20px}
+.pick .row .manage{background:var(--paper);border:1px solid var(--line);color:var(--muted);width:34px;height:34px;border-radius:9px;font-size:15px;cursor:pointer;flex:0 0 34px}
+.pick .row .manage:hover{color:var(--ink);border-color:var(--line-d)}
 .pick .row.disabled{opacity:.5;pointer-events:none}
 .tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;background:var(--paper);border:1px solid var(--line);color:var(--muted);margin-left:6px}
-.tag.soon{background:rgba(180,120,10,.12);border-color:rgba(180,120,10,.3);color:#b0790f}
+.tag.soon{background:var(--paper);border-color:var(--line-d);color:var(--muted)}
 .searchbox{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:9px 13px;margin-bottom:12px;box-shadow:var(--shadow)}
 .searchbox input{border:0;outline:0;flex:1;font-size:15px;background:transparent;color:var(--ink)}
 .searchbox .mag{color:var(--muted)}
@@ -85,17 +90,17 @@ textarea.inp{min-height:70px;resize:vertical}
 .opt.indent{margin-left:22px}
 .opts.inline .opt{flex:0 0 auto}
 .opt:hover{border-color:var(--line-d)}
-.opt.sel{border-color:var(--brand);background:rgba(29,95,214,.08)}
+.opt.sel{border-color:var(--ink);background:var(--sel)}
 .opt .box{width:19px;height:19px;flex:0 0 19px;border:2px solid var(--line-d);border-radius:5px;margin-top:1px;display:grid;place-items:center;transition:.12s;color:#fff;font-size:13px;font-weight:900}
 .opt.mode-single .box{border-radius:50%}
-.opt.sel .box{background:var(--brand);border-color:var(--brand)}
+.opt.sel .box{background:var(--ink);border-color:var(--ink)}
 .opt.sel .box::after{content:"✓"}
 .opt .lab{flex:1}
 .opt .fills{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .opt .fills input{border:0;border-bottom:1.5px solid var(--line-d);background:transparent;padding:2px 4px;font-size:13px;min-width:90px;font-family:inherit;color:var(--ink)}
-.opt .fills input:focus{outline:0;border-bottom-color:var(--brand)}
+.opt .fills input:focus{outline:0;border-bottom-color:var(--ink)}
 .opt .fills .fl{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
-.block-title{font-weight:700;font-size:14px;margin:20px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--brand);font-family:"Noto Serif TC",serif}
+.block-title{font-weight:700;font-size:14px;margin:20px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--ink);font-family:"Noto Serif TC",serif}
 .timehint{font-weight:400;color:var(--muted);font-size:12px}
 .photogrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .pslot{border:1.5px dashed var(--line-d);border-radius:12px;overflow:hidden;background:var(--card);position:relative}
@@ -106,7 +111,7 @@ textarea.inp{min-height:70px;resize:vertical}
 .pslot .ph .plus small{display:block;font-size:11px}
 .pslot .cap{padding:8px 10px;border-top:1px solid var(--line)}
 .pslot .cap input{border:0;outline:0;width:100%;font-size:13px;font-weight:600;text-align:center;background:transparent;color:var(--ink)}
-.pslot .del,.pslot .toimg{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(10,20,36,.72);color:#fff;font-size:14px;cursor:pointer;z-index:2}
+.pslot .del,.pslot .toimg{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(20,22,26,.72);color:#fff;font-size:14px;cursor:pointer;z-index:2}
 .pslot .del{display:none}
 .pslot.has .del{display:block}
 .ptextedit{padding:10px;position:relative}
@@ -127,6 +132,7 @@ textarea.inp{min-height:70px;resize:vertical}
 .btn.pri:hover{background:var(--brand-d)}
 .btn.pri:disabled{background:var(--line-d);box-shadow:none;cursor:not-allowed}
 .btn.gho{background:var(--paper);color:var(--ink);border:1px solid var(--line);flex:0 0 auto;padding-left:18px;padding-right:18px}
+.btn.danger{background:var(--danger);color:#fff}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;padding:14px 16px}
 .kv dt{color:var(--muted)}
 .kv dd{margin:0;font-weight:600}
@@ -135,15 +141,13 @@ textarea.inp{min-height:70px;resize:vertical}
 .result h3{font-family:"Noto Serif TC",serif;font-size:22px;margin:8px 0 4px}
 .result p{color:var(--muted);margin:0 0 20px}
 .linkbtn{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 18px;font-weight:700;color:var(--brand);text-decoration:none;box-shadow:var(--shadow);margin:6px}
-.banner{border-radius:11px;padding:11px 14px;font-size:13px;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start}
-.banner.info{background:rgba(29,95,214,.09);border:1px solid rgba(29,95,214,.25);color:var(--brand-d)}
-.banner.warn{background:rgba(180,120,10,.1);border:1px solid rgba(180,120,10,.3);color:#b0790f}
+.banner{border-radius:11px;padding:11px 14px;font-size:13px;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);color:var(--muted)}
 .toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:11px 20px;border-radius:24px;font-size:14px;z-index:80;box-shadow:0 6px 24px rgba(0,0,0,.25);opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center}
 .toast.on{opacity:1}
 .hint{font-size:12px;color:var(--muted);margin-top:4px}
 .spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:sp .7s linear infinite;vertical-align:-3px}
 @keyframes sp{to{transform:rotate(360deg)}}
-.modal{position:fixed;inset:0;z-index:70;background:rgba(8,16,30,.55);display:none;align-items:flex-end;justify-content:center}
+.modal{position:fixed;inset:0;z-index:70;background:rgba(15,16,19,.55);display:none;align-items:flex-end;justify-content:center}
 .modal.on{display:flex}
 .sheet{background:var(--card);width:100%;max-width:760px;max-height:86vh;border-radius:18px 18px 0 0;overflow:auto;padding:18px 16px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.25)}
 .sheet h3{font-family:"Noto Serif TC",serif;margin:0 0 4px;font-size:18px}
@@ -154,9 +158,7 @@ textarea.inp{min-height:70px;resize:vertical}
 .recitem .ops{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .recitem .ops button{font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--line-d);background:var(--paper);cursor:pointer;color:var(--ink)}
 .recitem .ops button.p{background:var(--brand);color:#fff;border-color:var(--brand)}
-.src{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;margin-left:6px;vertical-align:1px}
-.src.cloud{background:rgba(29,95,214,.12);color:var(--brand-d)}
-.src.local{background:rgba(120,120,120,.14);color:var(--muted)}
+.src{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;margin-left:6px;vertical-align:1px;background:var(--paper);border:1px solid var(--line);color:var(--muted)}
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:20px}
 .tabbar{display:flex;gap:8px;margin:12px 0 4px}
 .tabbar button{flex:1;padding:9px;border-radius:9px;border:1px solid var(--line-d);background:var(--paper);cursor:pointer;font-weight:700;font-size:13px;color:var(--muted)}
@@ -180,7 +182,7 @@ textarea.inp{min-height:70px;resize:vertical}
   <main>
     <section class="screen" data-step="0" id="scr-inspector">
       <h2 class="sec">選擇稽查員</h2>
-      <p class="sub">點選後需輸入個人登入碼，避免他人誤用你的署名。</p>
+      <p class="sub">點選後需輸入個人登入碼。名單雲端共用，各裝置一致；右側齒輪可改名／改碼／刪除。</p>
       <div class="searchbox"><span class="mag">🔍</span><input id="insSearch" placeholder="搜尋姓名或員編"></div>
       <div class="pick" id="inspectorList"></div>
       <div style="margin-top:12px"><button class="addbtn" id="btnAddIns">＋ 新增稽查員</button></div>
@@ -205,7 +207,7 @@ textarea.inp{min-height:70px;resize:vertical}
     </section>
     <section class="screen" data-step="4" id="scr-photo">
       <h2 class="sec">照片紀錄</h2>
-      <p class="sub">每格可「拍照 / 從相簿選 / 改用文字」。照片右下角自動蓋上拍攝時間（有定位權限時附座標），並與稽查單合併為同一份 PDF。</p>
+      <p class="sub">每格可選「直接拍照 / 從相簿選擇 / 改用文字」。照片右下角自動蓋上拍攝時間（有定位權限時附座標），並與稽查單合併為同一份 PDF。</p>
       <div class="photogrid" id="photoGrid"></div>
       <div style="margin-top:12px"><button class="addbtn" id="btnAddPhoto">＋ 新增欄位</button></div>
       <div class="fld" style="margin-top:18px"><label class="q">整體判定結果</label><div class="opts inline" id="conclusionOpts"></div></div>
@@ -240,7 +242,8 @@ const jset=(k,v)=>store.set(k,JSON.stringify(v));
 
 const INSPECTOR_SEED=[{id:"A01",name:"翊穜",unit:"志欣環保工程",code:"1234"},{id:"A02",name:"葉承典",unit:"志欣環保工程",code:"1234"}];
 function loadInspectors(){let a=jget("inspectors",null);if(!a){a=INSPECTOR_SEED;jset("inspectors",a);}return a;}
-function saveInspectors(a){jset("inspectors",a);}
+function saveInspectors(a){jset("inspectors",a);cloudSaveInspectors(a);}
+function nextInsId(list){let mx=0;list.forEach(i=>{const m=/^A(\d+)$/.exec(i.id||"");if(m)mx=Math.max(mx,+m[1]);});return "A"+String(mx+1).padStart(2,"0");}
 const TARGETS=[
   {id:"T001",name:"義美股份有限公司 嘉義中山店",brand:"義美股份有限公司",phone:"05-2239371",address:"嘉義市西區番社里中山路549號",chain:"y",placeType:"drink"},
   {id:"T002",name:"7-ELEVEN 嘉北門市",brand:"統一超商",phone:"05-2000000",address:"嘉義市東區忠孝路100號",chain:"y",placeType:"cvs"},
@@ -303,7 +306,6 @@ function nowStamp(){const d=new Date();return{roc:`${d.getFullYear()-1911}/${pad
   full:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}時${pad(d.getMinutes())}分`,
   local:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`,iso:d.toISOString()};}
 function stampNow(){const d=new Date();return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;}
-/* 稽查時間：手動 > 現場第一張照片 > 建單時間 */
 function firstCap(){const p=S.photos.find(p=>p.capturedAt);return p?p.capturedAt:null;}
 function capToFull(c){const[d,t]=c.split(" ");const[h,mi]=t.split(":");return `${d} ${h}時${mi}分`;}
 function capToRoc(c){const[Y,M,D]=c.slice(0,10).split("-");return `${+Y-1911}/${M}/${D}`;}
@@ -326,8 +328,12 @@ function goto(step){
 }
 function renderInspectors(q=""){const box=$("#inspectorList");box.innerHTML="";
   loadInspectors().filter(i=>(i.name+i.id).includes(q)).forEach(ins=>{
-    const row=el("div","row",`<div class="ico">👤</div><div class="body"><b>${ins.name}</b><small>員編 ${ins.id}・${ins.unit||""}</small></div><div class="arrow">🔒</div>`);
-    row.onclick=()=>askPasscode(ins);box.appendChild(row);});}
+    const row=el("div","row");
+    row.innerHTML=`<div class="ico">👤</div><div class="body"><b>${ins.name}</b><small>員編 ${ins.id}・${ins.unit||""}</small></div><button class="manage" title="管理">⚙︎</button>`;
+    row.querySelector(".body").onclick=()=>askPasscode(ins);
+    row.querySelector(".ico").onclick=()=>askPasscode(ins);
+    row.querySelector(".manage").onclick=e=>{e.stopPropagation();manageInspector(ins);};
+    box.appendChild(row);});}
 $("#insSearch").oninput=e=>renderInspectors(e.target.value.trim());
 function askPasscode(ins){
   openSheet(`<button class="close" onclick="closeSheet()">✕</button><h3>${ins.name}</h3><p class="sub" style="margin-bottom:14px">輸入登入碼以繼續</p>
@@ -345,8 +351,36 @@ $("#btnAddIns").onclick=()=>{
     <button class="btn pri" id="niSave" style="width:100%">建立</button></div>`);
   $("#niSave").onclick=()=>{const name=$("#niName").value.trim(),code=$("#niCode").value.trim();
     if(!name||code.length<4){toast("請填姓名並設定至少 4 位登入碼");return;}
-    const list=loadInspectors();const id="A"+String(list.length+1).padStart(2,"0");
+    const list=loadInspectors();const id=nextInsId(list);
     list.push({id,name,unit:$("#niUnit").value.trim(),code});saveInspectors(list);closeSheet();renderInspectors();toast(`已新增：${name}（員編 ${id}）`);};};
+
+/* 管理稽查員：先驗證原登入碼，再改名／改碼／刪除 */
+function manageInspector(ins){
+  openSheet(`<button class="close" onclick="closeSheet()">✕</button><h3>管理｜${ins.name}</h3>
+    <p class="sub" style="margin-bottom:14px">請先輸入此稽查員目前的登入碼</p>
+    <input class="inp pincode" id="mgPin" type="password" inputmode="numeric" maxlength="8" placeholder="••••">
+    <div id="mgErr" class="hint" style="color:var(--danger);min-height:16px"></div>
+    <button class="btn pri" style="width:100%" id="mgGo">驗證</button>`);
+  const inp=$("#mgPin");setTimeout(()=>inp.focus(),100);
+  const go=()=>{if(inp.value===String(ins.code))editInspector(ins);else{$("#mgErr").textContent="登入碼錯誤";inp.value="";inp.focus();}};
+  $("#mgGo").onclick=go;inp.onkeydown=e=>{if(e.key==="Enter")go();};}
+function editInspector(ins){
+  openSheet(`<button class="close" onclick="closeSheet()">✕</button><h3>編輯稽查員</h3>
+    <div class="formrow">
+      <input class="inp" id="edName" value="${ins.name}" placeholder="姓名">
+      <input class="inp" id="edUnit" value="${ins.unit||""}" placeholder="單位">
+      <input class="inp pincode" id="edCode" type="password" inputmode="numeric" maxlength="8" placeholder="新登入碼（留白＝不改）">
+      <button class="btn pri" id="edSave" style="width:100%">儲存變更</button>
+      <button class="btn danger" id="edDel" style="width:100%">刪除此稽查員</button>
+    </div>`);
+  $("#edSave").onclick=()=>{const name=$("#edName").value.trim();if(!name){toast("姓名不可空白");return;}
+    const nc=$("#edCode").value.trim();if(nc&&nc.length<4){toast("新登入碼至少 4 位");return;}
+    const list=loadInspectors().map(x=>x.id===ins.id?{...x,name,unit:$("#edUnit").value.trim(),code:nc||x.code}:x);
+    saveInspectors(list);closeSheet();renderInspectors();toast("已更新");};
+  let armed=false;const del=$("#edDel");
+  del.onclick=()=>{if(!armed){armed=true;del.textContent="再按一次確認刪除";return;}
+    const list=loadInspectors().filter(x=>x.id!==ins.id);saveInspectors(list);closeSheet();renderInspectors();toast(`已刪除：${ins.name}`);};}
+
 $("#btnLogout").onclick=()=>{S.inspector=null;CLOUD.drafts=[];CLOUD.records=[];CLOUD.loaded=false;resetSession();goto(0);};
 
 function renderForms(q=""){const box=$("#formList");box.innerHTML="";
@@ -419,9 +453,9 @@ function renderPhotos(){ensurePhotoSlots();const grid=$("#photoGrid");grid.inner
     opt.innerHTML=`<span class="box"></span><span class="lab">${c}</span>`;opt.onclick=e=>{e.preventDefault();S.conclusion=c;renderPhotos();};co.appendChild(opt);});}
 function openPhotoMenu(i){
   openSheet(`<button class="close" onclick="closeSheet()">✕</button><h3>此欄位內容</h3>
-    <div class="formrow"><button class="btn pri" id="pmCam" style="width:100%">📷 直接拍照</button>
-    <button class="btn gho" id="pmLib" style="width:100%">🖼️ 從相簿選擇</button>
-    <button class="btn gho" id="pmTxt" style="width:100%">✍️ 改用文字說明（無法拍照時）</button></div>`);
+    <div class="formrow"><button class="btn pri" id="pmCam" style="width:100%">直接拍照</button>
+    <button class="btn gho" id="pmLib" style="width:100%">從相簿選擇</button>
+    <button class="btn gho" id="pmTxt" style="width:100%">改用文字說明</button></div>`);
   $("#pmCam").onclick=()=>pickPhoto(i,true);$("#pmLib").onclick=()=>pickPhoto(i,false);$("#pmTxt").onclick=()=>{closeSheet();S.photos[i].mode="text";S.photos[i].dataUrl=null;S.photos[i].capturedAt=null;renderPhotos();};}
 function pickPhoto(i,useCam){closeSheet();
   const inp=document.createElement("input");inp.type="file";inp.accept="image/*";if(useCam)inp.capture="environment";inp.style.display="none";document.body.appendChild(inp);
@@ -447,7 +481,7 @@ function renderSign(){const area=$("#signArea");area.innerHTML="";
     if(rf)rf.onclick=()=>{const on=!rf.classList.contains("on");rf.classList.toggle("on",on);canvas.classList.toggle("refused",on);if(on){clearPad(canvas,sig.id);S.signatures[sig.id]="REFUSE";}else S.signatures[sig.id]=null;};
     if(S.signatures[sig.id]&&S.signatures[sig.id]!=="REFUSE"){const ctx=canvas.getContext("2d"),im=new Image();im.onload=()=>ctx.drawImage(im,0,0,canvas.width,canvas.height);im.src=S.signatures[sig.id];}
     if(S.signatures[sig.id]==="REFUSE"&&rf){rf.classList.add("on");canvas.classList.add("refused");}});}
-function initPad(canvas,id){const ctx=canvas.getContext("2d");ctx.lineWidth=2.4;ctx.lineCap="round";ctx.strokeStyle="#12294a";let drawing=false,last=null;
+function initPad(canvas,id){const ctx=canvas.getContext("2d");ctx.lineWidth=2.4;ctx.lineCap="round";ctx.strokeStyle="#1f2328";let drawing=false,last=null;
   const pos=e=>{const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*canvas.width/r.width,y:(t.clientY-r.top)*canvas.height/r.height};};
   canvas.addEventListener("pointerdown",e=>{if(canvas.classList.contains("refused"))return;drawing=true;last=pos(e);e.preventDefault();});
   canvas.addEventListener("pointermove",e=>{if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;e.preventDefault();});
@@ -462,6 +496,15 @@ function recordsKey(){return"records_"+S.inspector.id;}
 function autosaveDraft(){if(!S.inspector||!S.form||!S._draftId)return;const arr=jget(draftsKey(),[]);const snap=snapshot();snap.title=S.form.title;snap.name=S.values.name||"（未填名稱）";
   const i=arr.findIndex(d=>d._draftId===S._draftId);if(i>=0)arr[i]=snap;else arr.unshift(snap);jset(draftsKey(),arr.slice(0,20));}
 function removeDraft(){if(!S.inspector||!S._draftId)return;jset(draftsKey(),jget(draftsKey(),[]).filter(d=>d._draftId!==S._draftId));}
+
+/* 稽查員名單雲端 */
+async function cloudGetInspectors(){if(!CONFIG.SYNC_URL)return null;
+  try{const r=await fetch(CONFIG.SYNC_URL+"?action=inspectors");return await r.json();}catch(e){return null;}}
+async function cloudSaveInspectors(list){if(!CONFIG.SYNC_URL)return;
+  try{await fetch(CONFIG.SYNC_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveInspectors",inspectors:list})});}catch(e){}}
+async function loadInspectorsCloud(){const j=await cloudGetInspectors();
+  if(j&&j.ok){if(Array.isArray(j.inspectors)&&j.inspectors.length){jset("inspectors",j.inspectors);if(S.step===0)renderInspectors($("#insSearch").value.trim());}
+    else{cloudSaveInspectors(loadInspectors());}}}
 
 async function cloudGet(action){if(!CONFIG.SYNC_URL||!S.inspector)return null;
   try{const u=CONFIG.SYNC_URL+"?action="+action+"&inspector="+encodeURIComponent(S.inspector.id);const r=await fetch(u);return await r.json();}catch(e){return null;}}
@@ -483,13 +526,12 @@ function openRecords(tab){const drafts=mergeDrafts();const useCloud=CLOUD.record
     <div class="tabbar"><button data-t="drafts" class="${tab==="drafts"?"on":""}">暫存草稿 (${drafts.length})</button><button data-t="records" class="${tab==="records"?"on":""}">已完成 (${recs.length})</button></div><div id="recBody"></div>`);
   $$(".tabbar button").forEach(b=>b.onclick=()=>openRecords(b.dataset.t));const body=$("#recBody");
   if(tab==="drafts"){if(!drafts.length){body.innerHTML=`<div class="empty">目前沒有暫存草稿</div>`;return;}
-    drafts.forEach(d=>{const src=d._cloud?'<span class="src cloud">雲端</span>':'<span class="src local">本機</span>';
+    drafts.forEach(d=>{const src=d._cloud?'<span class="src">雲端</span>':'<span class="src">本機</span>';
       const it=el("div","recitem",`<b>${d.title}${src}</b><small>${d.name}・存於 ${d.savedAt}</small><div class="ops"><button class="p">繼續</button><button>刪除</button></div>`);
       it.querySelector(".p").onclick=()=>{restore(d);closeSheet();goto(d._step||3);toast("已載入草稿");};
       it.querySelectorAll("button")[1].onclick=async()=>{jset(draftsKey(),jget(draftsKey(),[]).filter(x=>x._draftId!==d._draftId));CLOUD.drafts=CLOUD.drafts.filter(x=>x._draftId!==d._draftId);await cloudDeleteDraft(d._draftId);openRecords("drafts");};body.appendChild(it);});
   }else{if(!recs.length){body.innerHTML=`<div class="empty">尚無已完成紀錄</div>`;return;}
-    recs.forEach(rc=>{const src=useCloud?'<span class="src cloud">雲端</span>':'<span class="src local">本機</span>';
-      const it=el("div","recitem",`<b>${rc.title}${src}</b><small>${rc.name}・${rc.conclusion||""}・${rc.savedAt}</small><div class="ops">${rc.pdfUrl?`<button class="p" onclick="window.open('${rc.pdfUrl}','_blank')">雲端 PDF</button>`:""}${rc.snap?`<button data-r="regen">重新產 PDF</button>`:""}</div>`);
+    recs.forEach(rc=>{const it=el("div","recitem",`<b>${rc.title}<span class="src">${useCloud?"雲端":"本機"}</span></b><small>${rc.name}・${rc.conclusion||""}・${rc.savedAt}</small><div class="ops">${rc.pdfUrl?`<button class="p" onclick="window.open('${rc.pdfUrl}','_blank')">雲端 PDF</button>`:""}${rc.snap?`<button data-r="regen">重新產 PDF</button>`:""}</div>`);
       const rg=it.querySelector('[data-r="regen"]');if(rg)rg.onclick=async()=>{restore(rc.snap);toast("產出中…");const pdf=await buildPDF();pdf.save(pdfName());};body.appendChild(it);});}}
 
 function pdfName(){return `${S.form.title}_${(S.values.name||"稽查").replace(/\s/g,"")}_${inspectRoc().replace(/\//g,"")}.pdf`;}
@@ -498,7 +540,7 @@ function renderDone(){const kv=$("#summaryKv");kv.innerHTML="";
   const imgs=S.photos.filter(p=>p.dataUrl).length,txts=S.photos.filter(p=>p.mode==="text"&&(p.text||"").trim()).length;
   [["稽查單",S.form.title],["稽查員",S.inspector.name],["稽查對象",S.values.name||"—"],["地址",S.values.address||"—"],["稽查時間",inspectFull()],["照片／文字",`${imgs} 張照片${txts?`、${txts} 則文字`:""}`],["判定結果",S.conclusion||"未填"]]
    .forEach(([k,v])=>{kv.appendChild(el("dt",null,k));kv.appendChild(el("dd",null,v));});
-  $("#doneResult").innerHTML=`<div class="banner ${CONFIG.SYNC_URL?"info":"warn"}"><span>${CONFIG.SYNC_URL?"ℹ️":"⚠️"}</span><div>${CONFIG.SYNC_URL?"完成後產出單一 PDF（稽查單＋照片），並同步至 Google Sheet／Drive，任何裝置皆可查閱。":"尚未設定同步端點，將只在本機產 PDF。"}</div></div>
+  $("#doneResult").innerHTML=`<div class="banner"><span>ℹ️</span><div>${CONFIG.SYNC_URL?"完成後產出單一 PDF（稽查單＋照片），並同步至 Google Sheet／Drive，任何裝置皆可查閱。":"尚未設定同步端點，將只在本機產 PDF。"}</div></div>
     <button class="btn pri" style="width:100%" id="btnFinish">產出 PDF 並同步</button><div id="finishOut" style="margin-top:16px"></div>`;
   $("#btnFinish").onclick=finish;}
 async function finish(){const btn=$("#btnFinish");btn.disabled=true;btn.innerHTML='<span class="spin"></span> 產出中…';
@@ -518,7 +560,6 @@ async function syncToBackend(pdfDataUri,fname){const payload={action:"submit",fo
     photos:S.photos.filter(p=>p.dataUrl).map(p=>({label:p.label,dataUrl:p.dataUrl,capturedAt:p.capturedAt})),signatures:S.signatures,pdf:pdfDataUri?{name:fname,dataUri:pdfDataUri}:null};
   const res=await fetch(CONFIG.SYNC_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});return res.json();}
 
-/* 暫存按鈕：本機 + 雲端 */
 $("#btnDraft").onclick=async()=>{if(!S.form){return;}autosaveDraft();const b=$("#btnDraft");const old=b.textContent;b.disabled=true;b.textContent="暫存中…";
   const ok=await cloudSaveDraft();b.disabled=false;b.textContent=old;
   toast(ok?"已暫存到雲端，換裝置登入同一稽查員即可接續":"已暫存於本機"+(CONFIG.SYNC_URL?"（雲端連線失敗）":""));
@@ -566,7 +607,7 @@ async function buildPDF(){const {jsPDF}=window.jspdf;const holder=el("div");hold
     .ph1{text-align:center;font-weight:900;font-size:19px}.ph2{text-align:center;font-weight:700;font-size:16px;margin:2px 0 14px}
     .ftab{width:100%;border-collapse:collapse;table-layout:fixed;font-family:'Noto Sans TC',sans-serif;font-size:12px}
     .ftab td{border:1px solid #000;padding:5px 7px;vertical-align:top;line-height:1.55;word-break:break-word}
-    .ftab td.lab{background:#eef2f8;font-weight:700}
+    .ftab td.lab{background:#eeeeee;font-weight:700}
     .ol{margin:1px 0}.ol.ind{margin-left:18px}
     .pfoot{margin-top:10px;font-size:10.5px;color:#555;font-family:'Noto Sans TC',sans-serif}
     .ptab{width:100%;border-collapse:collapse;table-layout:fixed;font-family:'Noto Sans TC',sans-serif;font-size:12px}
@@ -591,6 +632,7 @@ $("#btnNext").onclick=()=>{if(!validateStep())return;if(S.step<6)goto(S.step+1);
 $("#btnBack").onclick=()=>{if(S.step>0)goto(S.step-1);};
 $("#agencyLine").textContent=CONFIG.AGENCY;
 goto(0);
+loadInspectorsCloud();
 </script>
 </body>
 </html>
