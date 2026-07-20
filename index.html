@@ -25,15 +25,12 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
-  background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;line-height:1.5;}
+body{font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%;line-height:1.5;}
 button{font-family:inherit}
 .mono{font-family:"JetBrains Mono",monospace}
 #app{max-width:760px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;padding-bottom:96px}
-header.topbar{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--topbar) 0%,var(--topbar-2) 100%);
-  color:var(--topbar-tx);padding:10px 14px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 10px rgba(10,20,36,.25);}
-.seal{width:38px;height:38px;flex:0 0 38px;border-radius:50%;border:2px solid #9fc0ee;display:grid;place-items:center;
-  font-family:"Noto Serif TC",serif;font-weight:900;font-size:15px;color:#eaf1fb;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.16),transparent 60%);}
+header.topbar{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--topbar) 0%,var(--topbar-2) 100%);color:var(--topbar-tx);padding:10px 14px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 10px rgba(10,20,36,.25);}
+.seal{width:38px;height:38px;flex:0 0 38px;border-radius:50%;border:2px solid #9fc0ee;display:grid;place-items:center;font-family:"Noto Serif TC",serif;font-weight:900;font-size:15px;color:#eaf1fb;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.16),transparent 60%);}
 .topbar .t{flex:1;min-width:0}
 .topbar .t b{font-family:"Noto Serif TC",serif;font-weight:700;font-size:15px;letter-spacing:.5px;display:block;line-height:1.25}
 .topbar .t span{font-size:11px;color:var(--topbar-sub);letter-spacing:2px}
@@ -99,6 +96,7 @@ textarea.inp{min-height:70px;resize:vertical}
 .opt .fills input:focus{outline:0;border-bottom-color:var(--brand)}
 .opt .fills .fl{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
 .block-title{font-weight:700;font-size:14px;margin:20px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--brand);font-family:"Noto Serif TC",serif}
+.timehint{font-weight:400;color:var(--muted);font-size:12px}
 .photogrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .pslot{border:1.5px dashed var(--line-d);border-radius:12px;overflow:hidden;background:var(--card);position:relative}
 .pslot .ph{aspect-ratio:4/3;display:grid;place-items:center;color:var(--muted);cursor:pointer;position:relative;background:var(--paper)}
@@ -108,8 +106,12 @@ textarea.inp{min-height:70px;resize:vertical}
 .pslot .ph .plus small{display:block;font-size:11px}
 .pslot .cap{padding:8px 10px;border-top:1px solid var(--line)}
 .pslot .cap input{border:0;outline:0;width:100%;font-size:13px;font-weight:600;text-align:center;background:transparent;color:var(--ink)}
-.pslot .del{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(10,20,36,.72);color:#fff;font-size:15px;cursor:pointer;display:none}
+.pslot .del,.pslot .toimg{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(10,20,36,.72);color:#fff;font-size:14px;cursor:pointer;z-index:2}
+.pslot .del{display:none}
 .pslot.has .del{display:block}
+.ptextedit{padding:10px;position:relative}
+.ptextedit .tlabel{font-size:11px;color:var(--muted);margin-bottom:6px}
+.ptextedit textarea{width:100%;min-height:96px;border:1px solid var(--line-d);border-radius:8px;padding:8px;font-family:inherit;font-size:13px;background:var(--card);color:var(--ink);resize:vertical}
 .addbtn{border:1.5px dashed var(--line-d);border-radius:12px;background:var(--card);color:var(--brand);font-weight:700;padding:16px;cursor:pointer;font-size:14px;display:grid;place-items:center;min-height:56px;width:100%}
 .sigwrap{margin-bottom:16px}
 .sighead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -124,7 +126,7 @@ textarea.inp{min-height:70px;resize:vertical}
 .btn.pri{background:var(--brand);color:#fff;box-shadow:0 4px 14px rgba(29,95,214,.3)}
 .btn.pri:hover{background:var(--brand-d)}
 .btn.pri:disabled{background:var(--line-d);box-shadow:none;cursor:not-allowed}
-.btn.gho{background:var(--paper);color:var(--ink);border:1px solid var(--line);flex:0 0 auto;padding-left:20px;padding-right:20px}
+.btn.gho{background:var(--paper);color:var(--ink);border:1px solid var(--line);flex:0 0 auto;padding-left:18px;padding-right:18px}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;padding:14px 16px}
 .kv dt{color:var(--muted)}
 .kv dd{margin:0;font-weight:600}
@@ -136,7 +138,7 @@ textarea.inp{min-height:70px;resize:vertical}
 .banner{border-radius:11px;padding:11px 14px;font-size:13px;margin-bottom:14px;display:flex;gap:9px;align-items:flex-start}
 .banner.info{background:rgba(29,95,214,.09);border:1px solid rgba(29,95,214,.25);color:var(--brand-d)}
 .banner.warn{background:rgba(180,120,10,.1);border:1px solid rgba(180,120,10,.3);color:#b0790f}
-.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:11px 20px;border-radius:24px;font-size:14px;z-index:60;box-shadow:0 6px 24px rgba(0,0,0,.25);opacity:0;transition:.3s;pointer-events:none}
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:11px 20px;border-radius:24px;font-size:14px;z-index:80;box-shadow:0 6px 24px rgba(0,0,0,.25);opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center}
 .toast.on{opacity:1}
 .hint{font-size:12px;color:var(--muted);margin-top:4px}
 .spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:sp .7s linear infinite;vertical-align:-3px}
@@ -146,13 +148,15 @@ textarea.inp{min-height:70px;resize:vertical}
 .sheet{background:var(--card);width:100%;max-width:760px;max-height:86vh;border-radius:18px 18px 0 0;overflow:auto;padding:18px 16px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.25)}
 .sheet h3{font-family:"Noto Serif TC",serif;margin:0 0 4px;font-size:18px}
 .sheet .close{float:right;background:var(--paper);border:1px solid var(--line);border-radius:10px;width:34px;height:34px;font-size:16px;cursor:pointer;color:var(--ink)}
-.reclist{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-.recitem{border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:var(--card)}
+.recitem{border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:var(--card);margin-bottom:8px}
 .recitem b{font-size:14px}
 .recitem small{color:var(--muted);font-size:12px;display:block}
 .recitem .ops{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .recitem .ops button{font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--line-d);background:var(--paper);cursor:pointer;color:var(--ink)}
 .recitem .ops button.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.src{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;margin-left:6px;vertical-align:1px}
+.src.cloud{background:rgba(29,95,214,.12);color:var(--brand-d)}
+.src.local{background:rgba(120,120,120,.14);color:var(--muted)}
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:20px}
 .tabbar{display:flex;gap:8px;margin:12px 0 4px}
 .tabbar button{flex:1;padding:9px;border-radius:9px;border:1px solid var(--line-d);background:var(--paper);cursor:pointer;font-weight:700;font-size:13px;color:var(--muted)}
@@ -183,7 +187,7 @@ textarea.inp{min-height:70px;resize:vertical}
     </section>
     <section class="screen" data-step="1" id="scr-form">
       <h2 class="sec">選擇稽查單</h2>
-      <p class="sub">共 15 種表單，已上線者可直接使用。</p>
+      <p class="sub">共 15 種表單，已上線者可直接使用。可先在公司建單、填基本資料，按「暫存」帶到現場續填。</p>
       <div class="searchbox"><span class="mag">🔍</span><input id="formSearch" placeholder="搜尋表單名稱或編號"></div>
       <div class="pick" id="formList"></div>
     </section>
@@ -201,9 +205,9 @@ textarea.inp{min-height:70px;resize:vertical}
     </section>
     <section class="screen" data-step="4" id="scr-photo">
       <h2 class="sec">照片紀錄</h2>
-      <p class="sub">點欄位拍照或選圖。照片右下角會自動蓋上拍攝時間（有定位權限時附座標），並與稽查單合併為同一份 PDF。</p>
+      <p class="sub">每格可「拍照 / 從相簿選 / 改用文字」。照片右下角自動蓋上拍攝時間（有定位權限時附座標），並與稽查單合併為同一份 PDF。</p>
       <div class="photogrid" id="photoGrid"></div>
-      <div style="margin-top:12px"><button class="addbtn" id="btnAddPhoto">＋ 新增照片欄位</button></div>
+      <div style="margin-top:12px"><button class="addbtn" id="btnAddPhoto">＋ 新增欄位</button></div>
       <div class="fld" style="margin-top:18px"><label class="q">整體判定結果</label><div class="opts inline" id="conclusionOpts"></div></div>
     </section>
     <section class="screen" data-step="5" id="scr-sign">
@@ -220,6 +224,7 @@ textarea.inp{min-height:70px;resize:vertical}
   </main>
   <nav class="navbar" id="navbar">
     <button class="btn gho" id="btnBack">上一步</button>
+    <button class="btn gho" id="btnDraft" style="display:none">暫存</button>
     <button class="btn pri" style="flex:1" id="btnNext">下一步</button>
   </nav>
 </div>
@@ -285,17 +290,28 @@ const FORM_STUBS=[
 ].map(([id,code,title,icon])=>({id,code,title,icon,category:"稽查表單",ready:false}));
 const FORMS=[FORM_CUP,...FORM_STUBS];
 
-const S={step:0,inspector:null,form:null,target:null,values:{},photos:[],signatures:{},conclusion:null,startTime:null,_draftId:null};
+const S={step:0,inspector:null,form:null,target:null,values:{},photos:[],signatures:{},conclusion:null,startTime:null,inspectAt:null,_draftId:null};
 const G={geo:null};
+const CLOUD={drafts:[],records:[],loaded:false};
 const STEPS=["稽查員","稽查單","稽查對象","現場稽查","照片","簽名","完成"];
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
-function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),2200);}
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),2600);}
 function pad(n){return String(n).padStart(2,"0");}
 function nowStamp(){const d=new Date();return{roc:`${d.getFullYear()-1911}/${pad(d.getMonth()+1)}/${pad(d.getDate())}`,
-  full:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}時${pad(d.getMinutes())}分`,iso:d.toISOString()};}
+  full:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}時${pad(d.getMinutes())}分`,
+  local:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`,iso:d.toISOString()};}
 function stampNow(){const d=new Date();return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;}
+/* 稽查時間：手動 > 現場第一張照片 > 建單時間 */
+function firstCap(){const p=S.photos.find(p=>p.capturedAt);return p?p.capturedAt:null;}
+function capToFull(c){const[d,t]=c.split(" ");const[h,mi]=t.split(":");return `${d} ${h}時${mi}分`;}
+function capToRoc(c){const[Y,M,D]=c.slice(0,10).split("-");return `${+Y-1911}/${M}/${D}`;}
+function isoToFull(iso){const[d,t]=iso.split("T");const[h,mi]=t.split(":");return `${d} ${h}時${mi}分`;}
+function isoToRoc(iso){const[Y,M,D]=iso.split("T")[0].split("-");return `${+Y-1911}/${M}/${D}`;}
+function effInspectIso(){if(S.inspectAt)return S.inspectAt;const c=firstCap();if(c)return c.slice(0,16).replace(" ","T");return S.startTime?S.startTime.local:nowStamp().local;}
+function inspectFull(){if(S.inspectAt)return isoToFull(S.inspectAt);const c=firstCap();if(c)return capToFull(c);return S.startTime?S.startTime.full:nowStamp().full;}
+function inspectRoc(){if(S.inspectAt)return isoToRoc(S.inspectAt);const c=firstCap();if(c)return capToRoc(c);return S.startTime?S.startTime.roc:nowStamp().roc;}
 
 function buildRail(){const r=$("#steprail");r.innerHTML="";STEPS.forEach((n,i)=>{r.appendChild(el("div","st"+(i===S.step?" active":i<S.step?" done":""),`<span class="n">${i+1}</span><br>${n}`));});}
 function goto(step){
@@ -303,6 +319,7 @@ function goto(step){
   const li=!!S.inspector;$("#whoName").classList.toggle("show",li);$("#btnRecords").classList.toggle("show",li);$("#btnLogout").classList.toggle("show",li);
   $("#whoNameB").textContent=li?S.inspector.name:"—";
   $("#navbar").style.display=step===6?"none":"flex";$("#btnBack").style.display=step===0?"none":"block";$("#btnNext").textContent=step===5?"完成稽查":"下一步";
+  $("#btnDraft").style.display=(step>=2&&step<6&&S.form)?"block":"none";
   if(step===0)renderInspectors();if(step===1)renderForms();if(step===2)renderTargets();if(step===3)renderFill();
   if(step===4){renderPhotos();requestGeo();}if(step===5)renderSign();if(step===6)renderDone();
   if(step>=2&&S.form)autosaveDraft();window.scrollTo(0,0);
@@ -318,7 +335,7 @@ function askPasscode(ins){
     <div id="pinErr" class="hint" style="color:var(--danger);min-height:16px"></div>
     <button class="btn pri" style="width:100%;margin-top:6px" id="pinGo">登入</button>`);
   const inp=$("#pinInput");setTimeout(()=>inp.focus(),100);
-  const go=()=>{if(inp.value===String(ins.code)){S.inspector=ins;S.startTime=nowStamp();closeSheet();toast(`稽查員：${ins.name}`);goto(1);}
+  const go=()=>{if(inp.value===String(ins.code)){S.inspector=ins;S.startTime=nowStamp();closeSheet();toast(`稽查員：${ins.name}`);loadCloud();goto(1);}
     else{$("#pinErr").textContent="登入碼錯誤";inp.value="";inp.focus();}};
   $("#pinGo").onclick=go;inp.onkeydown=e=>{if(e.key==="Enter")go();};}
 $("#btnAddIns").onclick=()=>{
@@ -330,7 +347,7 @@ $("#btnAddIns").onclick=()=>{
     if(!name||code.length<4){toast("請填姓名並設定至少 4 位登入碼");return;}
     const list=loadInspectors();const id="A"+String(list.length+1).padStart(2,"0");
     list.push({id,name,unit:$("#niUnit").value.trim(),code});saveInspectors(list);closeSheet();renderInspectors();toast(`已新增：${name}（員編 ${id}）`);};};
-$("#btnLogout").onclick=()=>{S.inspector=null;resetSession();goto(0);};
+$("#btnLogout").onclick=()=>{S.inspector=null;CLOUD.drafts=[];CLOUD.records=[];CLOUD.loaded=false;resetSession();goto(0);};
 
 function renderForms(q=""){const box=$("#formList");box.innerHTML="";
   FORMS.filter(f=>(f.title+f.code).includes(q)).forEach(f=>{
@@ -370,30 +387,48 @@ function renderComposite(f){const wrap=el("div","fld");wrap.appendChild(el("labe
     inp.value=getV(f.id+"."+p.id)||"";inp.oninput=e=>setText(f.id+"."+p.id,e.target.value);cell.appendChild(inp);g.appendChild(cell);});
   wrap.appendChild(g);return wrap;}
 function renderField(f){if(f.type==="choice")return renderChoiceField(f);if(f.type==="composite")return renderComposite(f);return renderTextField(f);}
+function renderTimeField(){const wrap=el("div","fld");
+  wrap.innerHTML=`<label class="q">稽查時間 <span class="timehint">（預設抓現場第一張照片時間，可手動修改）</span></label>`;
+  const inp=el("input","inp");inp.type="datetime-local";inp.value=effInspectIso();
+  inp.onchange=e=>{S.inspectAt=e.target.value||null;renderFill();};wrap.appendChild(inp);return wrap;}
 function renderFill(){const F=S.form;$("#fillTitle").textContent=F.title;
-  $("#fillSub").innerHTML=`稽查時間 ${S.startTime?S.startTime.full:""}　<span class="mono">${F.code}</span>`;
-  const b=$("#fillBody");b.innerHTML="";b.appendChild(el("div","block-title","限制使用對象基本資料"));F.basic.forEach(f=>b.appendChild(renderField(f)));
+  $("#fillSub").innerHTML=`稽查時間 ${inspectFull()}　<span class="mono">${F.code}</span>`;
+  const b=$("#fillBody");b.innerHTML="";
+  b.appendChild(el("div","block-title","稽查時間"));b.appendChild(renderTimeField());
+  b.appendChild(el("div","block-title","限制使用對象基本資料"));F.basic.forEach(f=>b.appendChild(renderField(f)));
   b.appendChild(el("div","block-title","現場稽查及處理情形"));F.sections.forEach(s=>b.appendChild(renderChoiceField({...s,label:s.title})));
   b.appendChild(el("div","block-title","意見陳述"));F.opinions.forEach(o=>b.appendChild(renderTextField({...o,type:"textarea"})));}
 
 function requestGeo(){if(G.geo||!navigator.geolocation)return;
   try{navigator.geolocation.getCurrentPosition(p=>{G.geo={lat:p.coords.latitude,lng:p.coords.longitude};},()=>{},{timeout:6000,maximumAge:60000});}catch(e){}}
-function ensurePhotoSlots(){if(!S.photos.length)S.photos=(S.form.photoSlots||[]).map(l=>({label:l,dataUrl:null,capturedAt:null}));}
+function ensurePhotoSlots(){if(!S.photos.length)S.photos=(S.form.photoSlots||[]).map(l=>({label:l,dataUrl:null,capturedAt:null,mode:null,text:""}));}
 function renderPhotos(){ensurePhotoSlots();const grid=$("#photoGrid");grid.innerHTML="";
-  S.photos.forEach((p,i)=>{const slot=el("div","pslot"+(p.dataUrl?" has":""));
-    slot.innerHTML=`<div class="ph">${p.dataUrl?`<img src="${p.dataUrl}">`:`<div class="plus"><div class="ic">📷</div><small>點擊拍照 / 選圖</small></div>`}<button class="del">✕</button></div><div class="cap"><input value="${p.label||""}" placeholder="照片說明"></div>`;
-    slot.querySelector(".ph").onclick=e=>{if(e.target.classList.contains("del"))return;pickPhoto(i);};
-    slot.querySelector(".del").onclick=e=>{e.stopPropagation();S.photos[i].dataUrl=null;S.photos[i].capturedAt=null;renderPhotos();};
+  S.photos.forEach((p,i)=>{const has=p.dataUrl||p.mode==="text";const slot=el("div","pslot"+(has?" has":""));
+    let inner="";
+    if(p.mode==="text"){inner=`<button class="toimg" title="改用照片">📷</button><div class="ptextedit"><div class="tlabel">無法拍照時，改填文字說明：</div><textarea placeholder="例如：現場無販售、拒絕拍攝、大門深鎖…">${p.text||""}</textarea></div>`;}
+    else if(p.dataUrl){inner=`<div class="ph"><img src="${p.dataUrl}"><button class="del">✕</button></div>`;}
+    else{inner=`<div class="ph"><div class="plus"><div class="ic">📷</div><small>拍照 / 相簿 / 文字</small></div></div>`;}
+    slot.innerHTML=inner+`<div class="cap"><input value="${p.label||""}" placeholder="欄位說明"></div>`;
+    const phEl=slot.querySelector(".ph");if(phEl&&!p.dataUrl)phEl.onclick=()=>openPhotoMenu(i);
+    const delEl=slot.querySelector(".del");if(delEl)delEl.onclick=e=>{e.stopPropagation();S.photos[i].dataUrl=null;S.photos[i].capturedAt=null;renderPhotos();};
+    const toimg=slot.querySelector(".toimg");if(toimg)toimg.onclick=()=>{S.photos[i].mode=null;renderPhotos();};
+    const ta=slot.querySelector("textarea");if(ta)ta.oninput=e=>S.photos[i].text=e.target.value;
     slot.querySelector(".cap input").oninput=e=>S.photos[i].label=e.target.value;grid.appendChild(slot);});
   const co=$("#conclusionOpts");co.innerHTML="";
   (S.form.conclusion||[]).forEach(c=>{const opt=el("label","opt mode-single"+(S.conclusion===c?" sel":""));
     opt.innerHTML=`<span class="box"></span><span class="lab">${c}</span>`;opt.onclick=e=>{e.preventDefault();S.conclusion=c;renderPhotos();};co.appendChild(opt);});}
-let _pi=null,_fi=null;
-function pickPhoto(i){_pi=i;
-  if(!_fi){_fi=document.createElement("input");_fi.type="file";_fi.accept="image/*";_fi.capture="environment";_fi.style.display="none";document.body.appendChild(_fi);
-    _fi.onchange=async()=>{const f=_fi.files[0];if(!f)return;const t=stampNow();const lines=[t];if(G.geo)lines.push(`${G.geo.lat.toFixed(5)}, ${G.geo.lng.toFixed(5)}`);
-      const url=await compressImage(f,1280,.72,lines);S.photos[_pi].dataUrl=url;S.photos[_pi].capturedAt=t;_fi.value="";renderPhotos();autosaveDraft();};}
-  _fi.click();}
+function openPhotoMenu(i){
+  openSheet(`<button class="close" onclick="closeSheet()">✕</button><h3>此欄位內容</h3>
+    <div class="formrow"><button class="btn pri" id="pmCam" style="width:100%">📷 直接拍照</button>
+    <button class="btn gho" id="pmLib" style="width:100%">🖼️ 從相簿選擇</button>
+    <button class="btn gho" id="pmTxt" style="width:100%">✍️ 改用文字說明（無法拍照時）</button></div>`);
+  $("#pmCam").onclick=()=>pickPhoto(i,true);$("#pmLib").onclick=()=>pickPhoto(i,false);$("#pmTxt").onclick=()=>{closeSheet();S.photos[i].mode="text";S.photos[i].dataUrl=null;S.photos[i].capturedAt=null;renderPhotos();};}
+function pickPhoto(i,useCam){closeSheet();
+  const inp=document.createElement("input");inp.type="file";inp.accept="image/*";if(useCam)inp.capture="environment";inp.style.display="none";document.body.appendChild(inp);
+  inp.onchange=async()=>{const f=inp.files[0];if(f){const t=stampNow();const lines=[t];if(G.geo)lines.push(`${G.geo.lat.toFixed(5)}, ${G.geo.lng.toFixed(5)}`);
+    const url=await compressImage(f,1280,.72,lines);S.photos[i].dataUrl=url;S.photos[i].capturedAt=t;S.photos[i].mode=null;renderPhotos();autosaveDraft();}
+    try{document.body.removeChild(inp);}catch(e){}};
+  inp.click();}
 function compressImage(file,maxW,q,stampLines){return new Promise(res=>{const img=new Image(),r=new FileReader();
   r.onload=()=>{img.onload=()=>{const sc=Math.min(1,maxW/img.width);const c=document.createElement("canvas");c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
     const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);if(stampLines&&stampLines.length)drawStamp(ctx,c.width,c.height,stampLines);res(c.toDataURL("image/jpeg",q));};img.src=r.result;};r.readAsDataURL(file);});}
@@ -401,7 +436,7 @@ function drawStamp(ctx,w,h,lines){const fs=Math.max(15,Math.round(w/42)),padx=8,
   ctx.font=`bold ${fs}px "Noto Sans TC",sans-serif`;ctx.textBaseline="top";
   const bw=Math.max(...lines.map(l=>ctx.measureText(l).width))+padx*2;const bh=lines.length*lh+padx;const x=w-bw-8,y=h-bh-8;
   ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x,y,bw,bh);ctx.fillStyle="#fff";lines.forEach((l,i)=>ctx.fillText(l,x+padx,y+padx/2+i*lh));}
-$("#btnAddPhoto").onclick=()=>{S.photos.push({label:"補充照片",dataUrl:null,capturedAt:null});renderPhotos();};
+$("#btnAddPhoto").onclick=()=>{S.photos.push({label:"補充欄位",dataUrl:null,capturedAt:null,mode:null,text:""});renderPhotos();};
 
 function renderSign(){const area=$("#signArea");area.innerHTML="";
   S.form.signatures.forEach(sig=>{const wrap=el("div","sigwrap");wrap.innerHTML=`<div class="sighead"><b>${sig.label}${sig.optional?"（選填）":""}</b></div>`;
@@ -419,48 +454,76 @@ function initPad(canvas,id){const ctx=canvas.getContext("2d");ctx.lineWidth=2.4;
   window.addEventListener("pointerup",()=>{if(!drawing)return;drawing=false;S.signatures[id]=canvas.toDataURL("image/png");});}
 function clearPad(canvas,id){canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);S.signatures[id]=null;}
 
-function snapshot(){return{_draftId:S._draftId,_step:S.step,formId:S.form.id,target:S.target,values:S.values,photos:S.photos,signatures:S.signatures,conclusion:S.conclusion,startTime:S.startTime,savedAt:nowStamp().full};}
-function restore(snap){S.form=FORMS.find(f=>f.id===snap.formId);S.target=snap.target;S.values=snap.values||{};S.photos=snap.photos||[];S.signatures=snap.signatures||{};S.conclusion=snap.conclusion||null;S.startTime=snap.startTime||nowStamp();S._draftId=snap._draftId;}
+/* ---------- 草稿 / 紀錄（本機 + 雲端跨裝置） ---------- */
+function snapshot(){return{_draftId:S._draftId,_step:S.step,formId:S.form.id,target:S.target,values:S.values,photos:S.photos,signatures:S.signatures,conclusion:S.conclusion,startTime:S.startTime,inspectAt:S.inspectAt,savedAt:nowStamp().full};}
+function restore(snap){S.form=FORMS.find(f=>f.id===snap.formId);S.target=snap.target;S.values=snap.values||{};S.photos=snap.photos||[];S.signatures=snap.signatures||{};S.conclusion=snap.conclusion||null;S.startTime=snap.startTime||nowStamp();S.inspectAt=snap.inspectAt||null;S._draftId=snap._draftId;}
 function draftsKey(){return"drafts_"+S.inspector.id;}
 function recordsKey(){return"records_"+S.inspector.id;}
 function autosaveDraft(){if(!S.inspector||!S.form||!S._draftId)return;const arr=jget(draftsKey(),[]);const snap=snapshot();snap.title=S.form.title;snap.name=S.values.name||"（未填名稱）";
   const i=arr.findIndex(d=>d._draftId===S._draftId);if(i>=0)arr[i]=snap;else arr.unshift(snap);jset(draftsKey(),arr.slice(0,20));}
 function removeDraft(){if(!S.inspector||!S._draftId)return;jset(draftsKey(),jget(draftsKey(),[]).filter(d=>d._draftId!==S._draftId));}
+
+async function cloudGet(action){if(!CONFIG.SYNC_URL||!S.inspector)return null;
+  try{const u=CONFIG.SYNC_URL+"?action="+action+"&inspector="+encodeURIComponent(S.inspector.id);const r=await fetch(u);return await r.json();}catch(e){return null;}}
+async function cloudSaveDraft(){if(!CONFIG.SYNC_URL||!S.inspector||!S._draftId)return false;
+  try{const draft=snapshot();draft.title=S.form.title;draft.name=S.values.name||"（未填名稱）";
+    const body={action:"saveDraft",inspectorId:S.inspector.id,draftId:S._draftId,draft};
+    const r=await fetch(CONFIG.SYNC_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)});const j=await r.json();return j&&j.ok;}catch(e){return false;}}
+async function cloudDeleteDraft(id){if(!CONFIG.SYNC_URL||!S.inspector)return;
+  try{await fetch(CONFIG.SYNC_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"deleteDraft",inspectorId:S.inspector.id,draftId:id})});}catch(e){}}
+async function loadCloud(){const d=await cloudGet("drafts");const r=await cloudGet("records");CLOUD.drafts=(d&&d.drafts)||[];CLOUD.records=(r&&r.records)||[];CLOUD.loaded=!!(d||r);}
+function mergeDrafts(){const map={};CLOUD.drafts.forEach(d=>{if(d._draftId)map[d._draftId]={...d,_cloud:true};});
+  jget(draftsKey(),[]).forEach(d=>{const c=map[d._draftId];if(!c||String(d.savedAt||"")>=String(c.savedAt||""))map[d._draftId]={...d,_cloud:!!c};});
+  return Object.values(map).sort((a,b)=>String(b.savedAt||"").localeCompare(String(a.savedAt||"")));}
+
 $("#btnRecords").onclick=()=>openRecords("drafts");
-function openRecords(tab){const drafts=jget(draftsKey(),[]),recs=jget(recordsKey(),[]);
+function openRecords(tab){const drafts=mergeDrafts();const useCloud=CLOUD.records.length>0;const recs=useCloud?CLOUD.records:jget(recordsKey(),[]);
   openSheet(`<button class="close" onclick="closeSheet()">✕</button><h3>我的紀錄</h3>
+    <p class="hint" style="margin:2px 0 0">${CONFIG.SYNC_URL?(CLOUD.loaded?"已與雲端同步，跨裝置共用":"雲端連線中…顯示本機資料"):"未設定雲端，僅本機"}</p>
     <div class="tabbar"><button data-t="drafts" class="${tab==="drafts"?"on":""}">暫存草稿 (${drafts.length})</button><button data-t="records" class="${tab==="records"?"on":""}">已完成 (${recs.length})</button></div><div id="recBody"></div>`);
   $$(".tabbar button").forEach(b=>b.onclick=()=>openRecords(b.dataset.t));const body=$("#recBody");
   if(tab==="drafts"){if(!drafts.length){body.innerHTML=`<div class="empty">目前沒有暫存草稿</div>`;return;}
-    drafts.forEach(d=>{const it=el("div","recitem",`<b>${d.title}</b><small>${d.name}・存於 ${d.savedAt}</small><div class="ops"><button class="p">繼續</button><button>刪除</button></div>`);
+    drafts.forEach(d=>{const src=d._cloud?'<span class="src cloud">雲端</span>':'<span class="src local">本機</span>';
+      const it=el("div","recitem",`<b>${d.title}${src}</b><small>${d.name}・存於 ${d.savedAt}</small><div class="ops"><button class="p">繼續</button><button>刪除</button></div>`);
       it.querySelector(".p").onclick=()=>{restore(d);closeSheet();goto(d._step||3);toast("已載入草稿");};
-      it.querySelectorAll("button")[1].onclick=()=>{jset(draftsKey(),jget(draftsKey(),[]).filter(x=>x._draftId!==d._draftId));openRecords("drafts");};body.appendChild(it);});
+      it.querySelectorAll("button")[1].onclick=async()=>{jset(draftsKey(),jget(draftsKey(),[]).filter(x=>x._draftId!==d._draftId));CLOUD.drafts=CLOUD.drafts.filter(x=>x._draftId!==d._draftId);await cloudDeleteDraft(d._draftId);openRecords("drafts");};body.appendChild(it);});
   }else{if(!recs.length){body.innerHTML=`<div class="empty">尚無已完成紀錄</div>`;return;}
-    recs.forEach(rc=>{const it=el("div","recitem",`<b>${rc.title}</b><small>${rc.name}・${rc.conclusion||""}・${rc.savedAt}${rc.synced?"・已同步":""}</small><div class="ops">${rc.pdfUrl?`<button class="p" onclick="window.open('${rc.pdfUrl}','_blank')">雲端PDF</button>`:""}<button data-r="regen">重新產PDF</button></div>`);
-      it.querySelector('[data-r="regen"]').onclick=async()=>{restore(rc.snap);toast("產出中…");const pdf=await buildPDF();pdf.save(`${S.form.code}_${(S.values.name||"稽查")}_${S.startTime.roc.replace(/\//g,"")}.pdf`);};body.appendChild(it);});}}
+    recs.forEach(rc=>{const src=useCloud?'<span class="src cloud">雲端</span>':'<span class="src local">本機</span>';
+      const it=el("div","recitem",`<b>${rc.title}${src}</b><small>${rc.name}・${rc.conclusion||""}・${rc.savedAt}</small><div class="ops">${rc.pdfUrl?`<button class="p" onclick="window.open('${rc.pdfUrl}','_blank')">雲端 PDF</button>`:""}${rc.snap?`<button data-r="regen">重新產 PDF</button>`:""}</div>`);
+      const rg=it.querySelector('[data-r="regen"]');if(rg)rg.onclick=async()=>{restore(rc.snap);toast("產出中…");const pdf=await buildPDF();pdf.save(pdfName());};body.appendChild(it);});}}
+
+function pdfName(){return `${S.form.title}_${(S.values.name||"稽查").replace(/\s/g,"")}_${inspectRoc().replace(/\//g,"")}.pdf`;}
 
 function renderDone(){const kv=$("#summaryKv");kv.innerHTML="";
-  [["稽查單",S.form.title],["稽查員",S.inspector.name],["稽查對象",S.values.name||"—"],["地址",S.values.address||"—"],["稽查時間",S.startTime.full],["照片",`${S.photos.filter(p=>p.dataUrl).length} 張`],["判定結果",S.conclusion||"未填"]]
+  const imgs=S.photos.filter(p=>p.dataUrl).length,txts=S.photos.filter(p=>p.mode==="text"&&(p.text||"").trim()).length;
+  [["稽查單",S.form.title],["稽查員",S.inspector.name],["稽查對象",S.values.name||"—"],["地址",S.values.address||"—"],["稽查時間",inspectFull()],["照片／文字",`${imgs} 張照片${txts?`、${txts} 則文字`:""}`],["判定結果",S.conclusion||"未填"]]
    .forEach(([k,v])=>{kv.appendChild(el("dt",null,k));kv.appendChild(el("dd",null,v));});
-  $("#doneResult").innerHTML=`<div class="banner ${CONFIG.SYNC_URL?"info":"warn"}"><span>${CONFIG.SYNC_URL?"ℹ️":"⚠️"}</span><div>${CONFIG.SYNC_URL?"完成後產出單一 PDF（稽查單＋照片），並同步至 Google Sheet／Drive。":"尚未設定同步端點，將只在本機產 PDF。把 GAS 網址填入程式最上方 CONFIG.SYNC_URL 即會自動同步。"}</div></div>
+  $("#doneResult").innerHTML=`<div class="banner ${CONFIG.SYNC_URL?"info":"warn"}"><span>${CONFIG.SYNC_URL?"ℹ️":"⚠️"}</span><div>${CONFIG.SYNC_URL?"完成後產出單一 PDF（稽查單＋照片），並同步至 Google Sheet／Drive，任何裝置皆可查閱。":"尚未設定同步端點，將只在本機產 PDF。"}</div></div>
     <button class="btn pri" style="width:100%" id="btnFinish">產出 PDF 並同步</button><div id="finishOut" style="margin-top:16px"></div>`;
   $("#btnFinish").onclick=finish;}
 async function finish(){const btn=$("#btnFinish");btn.disabled=true;btn.innerHTML='<span class="spin"></span> 產出中…';
-  try{const pdf=await buildPDF();const blob=pdf.output("blob");const url=URL.createObjectURL(blob);
-    const fname=`${S.form.code}_${(S.values.name||"稽查").replace(/\s/g,"")}_${S.startTime.roc.replace(/\//g,"")}.pdf`;let synced=false,pdfLink=null;
+  try{const pdf=await buildPDF();const blob=pdf.output("blob");const url=URL.createObjectURL(blob);const fname=pdfName();let synced=false,pdfLink=null;
     if(CONFIG.SYNC_URL){btn.innerHTML='<span class="spin"></span> 同步中…';
       try{const res=await syncToBackend(CONFIG.UPLOAD_PDF?pdf.output("datauristring"):null,fname);synced=true;pdfLink=res&&res.pdfUrl;}catch(e){console.error(e);}}
-    const recs=jget(recordsKey(),[]);recs.unshift({title:S.form.title,name:S.values.name||"",conclusion:S.conclusion,savedAt:S.startTime.full,synced,pdfUrl:pdfLink,snap:snapshot()});jset(recordsKey(),recs.slice(0,20));removeDraft();
+    const recs=jget(recordsKey(),[]);recs.unshift({title:S.form.title,name:S.values.name||"",conclusion:S.conclusion,savedAt:inspectFull(),synced,pdfUrl:pdfLink,snap:snapshot()});jset(recordsKey(),recs.slice(0,20));
+    removeDraft();if(synced)cloudDeleteDraft(S._draftId);
     $("#finishOut").innerHTML=`<div class="result"><div class="big">✅</div><h3>稽查完成</h3><p>${synced?"已同步至彙整表":"PDF 已產出"}</p>
       <div><a class="linkbtn" download="${fname}" href="${url}">⬇️ 下載 PDF</a>${pdfLink?`<a class="linkbtn" target="_blank" href="${pdfLink}">☁️ 雲端 PDF</a>`:""}</div>
       <div style="margin-top:20px"><button class="btn gho" id="again" style="padding:12px 26px">＋ 開始新的稽查</button></div></div>`;
     $("#again").onclick=()=>{resetSession();goto(1);};if(!synced&&CONFIG.SYNC_URL)toast("同步失敗，PDF 已在本機產出");
   }catch(err){console.error(err);toast("產出失敗："+err.message);btn.disabled=false;btn.textContent="重新產出 PDF 並同步";}}
-function resetSession(){Object.assign(S,{form:null,target:null,values:{},photos:[],signatures:{},conclusion:null,startTime:S.inspector?nowStamp():null,_draftId:null});}
-async function syncToBackend(pdfDataUri,fname){const payload={formId:S.form.id,formCode:S.form.code,formTitle:S.form.title,inspector:S.inspector,target:S.target,
-    startTime:S.startTime.full,iso:S.startTime.iso,values:S.values,conclusion:S.conclusion,
+function resetSession(){Object.assign(S,{form:null,target:null,values:{},photos:[],signatures:{},conclusion:null,startTime:S.inspector?nowStamp():null,inspectAt:null,_draftId:null});}
+async function syncToBackend(pdfDataUri,fname){const payload={action:"submit",formId:S.form.id,formCode:S.form.code,formTitle:S.form.title,inspector:S.inspector,target:S.target,draftId:S._draftId,
+    startTime:inspectFull(),values:S.values,conclusion:S.conclusion,
     photos:S.photos.filter(p=>p.dataUrl).map(p=>({label:p.label,dataUrl:p.dataUrl,capturedAt:p.capturedAt})),signatures:S.signatures,pdf:pdfDataUri?{name:fname,dataUri:pdfDataUri}:null};
   const res=await fetch(CONFIG.SYNC_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});return res.json();}
+
+/* 暫存按鈕：本機 + 雲端 */
+$("#btnDraft").onclick=async()=>{if(!S.form){return;}autosaveDraft();const b=$("#btnDraft");const old=b.textContent;b.disabled=true;b.textContent="暫存中…";
+  const ok=await cloudSaveDraft();b.disabled=false;b.textContent=old;
+  toast(ok?"已暫存到雲端，換裝置登入同一稽查員即可接續":"已暫存於本機"+(CONFIG.SYNC_URL?"（雲端連線失敗）":""));
+  if(ok){const c=CLOUD.drafts.filter(d=>d._draftId!==S._draftId);const snap=snapshot();snap.title=S.form.title;snap.name=S.values.name||"（未填名稱）";c.unshift(snap);CLOUD.drafts=c;}
+  goto(1);};
 
 function mk(s){return s?"■":"□";}
 function fillTxt(f,o,fl){const v=getFill(f,o,fl);return v?`<u>&nbsp;${v}&nbsp;</u>`:"＿＿＿";}
@@ -471,7 +534,7 @@ function officialFormHTML(){const F=S.form,V=S.values;const cy=isSel("chain","y"
   const sig=id=>{const v=S.signatures[id];if(v==="REFUSE")return`<span style="color:#c33a2e">拒簽</span>`;if(v&&v!=="REFUSE")return`<img src="${v}" style="height:44px">`;return"";};
   return `<div class="pdfpage"><div class="ph1">${CONFIG.AGENCY}</div><div class="ph2">${F.title}</div>
     <table class="ftab"><colgroup><col style="width:19%"><col><col style="width:13%"><col style="width:19%"></colgroup>
-      <tr><td class="lab">稽查時間</td><td colspan="3">${S.startTime.full}</td></tr>
+      <tr><td class="lab">稽查時間</td><td colspan="3">${inspectFull()}</td></tr>
       <tr><td class="lab">名稱</td><td>${V.name||""}</td><td class="lab">連鎖經營</td><td>${mk(cy)} 是　${mk(cn)} 否</td></tr>
       <tr><td class="lab">品牌名稱</td><td>${V.brand||""}</td><td class="lab">電話</td><td>${V.phone||""}</td></tr>
       <tr><td class="lab">地址</td><td colspan="3">${V.address||""}</td></tr>
@@ -488,13 +551,13 @@ function officialFormHTML(){const F=S.form,V=S.values;const cy=isSel("chain","y"
       <tr><td class="lab">會同單位人員簽名</td><td colspan="3">${sig("accompany")}</td></tr>
     </table><div class="pfoot">稽查員 ${S.inspector.name}（${S.inspector.id}）　列印時間 ${nowStamp().full}</div></div>`;}
 function chunk2(a){const o=[];for(let i=0;i<a.length;i+=2)o.push(a.slice(i,i+2));return o;}
-function photoPagesHTML(){const ph=S.photos.filter(p=>p.dataUrl);if(!ph.length)return"";let pages="";
-  for(let i=0;i<ph.length;i+=4){const g=ph.slice(i,i+4);
+function photoPagesHTML(){const items=S.photos.filter(p=>p.dataUrl||(p.mode==="text"&&(p.text||"").trim()));if(!items.length)return"";let pages="";
+  for(let i=0;i<items.length;i+=4){const g=items.slice(i,i+4);
     pages+=`<div class="pdfpage"><div class="ph1">${CONFIG.AGENCY}</div><div class="ph2">${S.form.title}　照片紀錄</div>
       <table class="ptab"><colgroup><col style="width:50%"><col style="width:50%"></colgroup>
-        <tr><td class="pinfo" colspan="2">名稱：${S.values.name||""}　日期：${S.startTime.roc}</td></tr>
+        <tr><td class="pinfo" colspan="2">名稱：${S.values.name||""}　日期：${inspectRoc()}</td></tr>
         <tr><td class="pinfo" colspan="2">地址：${S.values.address||""}</td></tr>
-        ${chunk2(g).map(pair=>`<tr>${pair.map(p=>`<td class="pcell"><div class="pimg"><img src="${p.dataUrl}"></div><div class="pcap">${p.label||""}</div>${p.capturedAt?`<div class="ptime">${p.capturedAt}</div>`:""}</td>`).join("")}${pair.length<2?'<td class="pcell"></td>':""}</tr>`).join("")}
+        ${chunk2(g).map(pair=>`<tr>${pair.map(p=>`<td class="pcell">${p.dataUrl?`<div class="pimg"><img src="${p.dataUrl}"></div>`:`<div class="pimg ptextbox">${(p.text||"").replace(/\n/g,"<br>")}</div>`}<div class="pcap">${p.label||""}</div>${p.dataUrl&&p.capturedAt?`<div class="ptime">${p.capturedAt}</div>`:""}</td>`).join("")}${pair.length<2?'<td class="pcell"></td>':""}</tr>`).join("")}
       </table><div class="pfoot" style="text-align:center">判定：${S.conclusion||""}</div></div>`;}
   return pages;}
 async function buildPDF(){const {jsPDF}=window.jspdf;const holder=el("div");holder.style.cssText="position:fixed;left:-9999px;top:0;width:794px;background:#fff";
@@ -511,6 +574,7 @@ async function buildPDF(){const {jsPDF}=window.jspdf;const holder=el("div");hold
     .pcell{text-align:center;vertical-align:top;word-break:break-word}
     .pimg{height:225px;display:flex;align-items:center;justify-content:center;background:#fafafa}
     .pimg img{max-width:100%;max-height:225px;object-fit:contain}
+    .ptextbox{padding:12px;text-align:center;font-size:14px;line-height:1.7;color:#222}
     .pcap{font-weight:700;padding:6px 0 2px}.ptime{font-size:10px;color:#666;font-family:'JetBrains Mono',monospace;padding-bottom:4px}
   </style>${officialFormHTML()}${photoPagesHTML()}`;
   document.body.appendChild(holder);const pages=$$(".pdfpage",holder),pdf=new jsPDF("p","mm","a4"),W=210,H=297;
