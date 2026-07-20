@@ -226,7 +226,7 @@ textarea.inp{min-height:70px;resize:vertical}
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <script>
-const CONFIG={SYNC_URL:"",UPLOAD_PDF:true,AGENCY:"嘉義市政府環境保護局"};
+const CONFIG={SYNC_URL:"https://script.google.com/macros/s/AKfycbzM_PDN_vLpuK9KpTBwtGL-KVL3AZoINCEwwEo3xOnQRu4P4VZwalkhzIeW_GzjsSxD/exec",UPLOAD_PDF:true,AGENCY:"嘉義市政府環境保護局"};
 const store=(()=>{let ok=false;try{const k="__t";localStorage.setItem(k,"1");localStorage.removeItem(k);ok=true;}catch(e){}
   const mem={};return{get:k=>{try{return ok?localStorage.getItem(k):(mem[k]??null);}catch(e){return mem[k]??null;}},
     set:(k,v)=>{try{ok?localStorage.setItem(k,v):(mem[k]=v);}catch(e){mem[k]=v;}}};})();
