@@ -758,15 +758,51 @@ const FORM_COSMETIC={id:"cosmetic",code:"F20250402084421",category:"源頭減量
   photoSlots:["店家外觀","門牌","疑似含塑膠微粒產品","產品成分標示"],
   conclusion:["符合規定","不符合規定"],
 };
+const FORM_BAG={id:"bag",code:"F20250402084515",category:"分類回收",icon:"🗑️",ready:true,short:"破袋",nameLabel:"地點",
+  title:"嘉義市垃圾強制分類破袋稽查紀錄表",basicTitle:"基本資料",
+  basic:[
+    {id:"kind",label:"稽查種類",type:"choice",mode:"single",inline:true,options:[chip("fixed","定點檢查"),chip("route","沿線檢查"),chip("appeal","陳情檢查")]},
+    {id:"route",label:"路線編號",type:"text"},
+    {id:"placeType",label:"類型",type:"choice",mode:"single",inline:true,options:[chip("public","一般民眾"),chip("park","公園"),chip("gov","機關"),chip("school","學校"),{id:"other",label:"其他",fills:[{id:"txt",label:""}]}]},
+    {id:"name",label:"地點",type:"text",required:true,full:true},
+    {id:"visual",label:"目視計數",type:"composite",parts:[{id:"bags",label:"夾雜資收物垃圾包數"},{id:"items",label:"資收物件數"}]},
+    {id:"tally",label:"破袋統計",type:"composite",parts:[{id:"total",label:"總破袋數"},{id:"pass",label:"合格包數"},{id:"fail",label:"違規包數"}]},
+  ],
+  sections:[
+    {id:"s1",stat:"夾雜資收物件數",title:"宣導情形—目視計數垃圾包內夾雜資源回收物之種類及件數（勾選並填件數）",type:"choice",mode:"multi",options:[
+      {id:"paper",label:"紙類（一般紙類、紙張）",fills:[{id:"n",label:"件數"}]},
+      {id:"papercup",label:"紙容器（便當盒、飲料紙杯、紙包裝盒等）",fills:[{id:"n",label:"件數"}]},
+      {id:"plastic",label:"塑膠類（保特瓶、塑膠杯蓋及塑膠內襯等）",fills:[{id:"n",label:"件數"}]},
+      {id:"metal",label:"鐵鋁類（罐裝飲料及油漆罐等）",fills:[{id:"n",label:"件數"}]},
+      {id:"foil",label:"鋁箔包類（各式鋁箔包）",fills:[{id:"n",label:"件數"}]},
+      {id:"cleanbag",label:"乾淨塑膠袋（飲料袋、各式塑膠袋）",fills:[{id:"n",label:"件數"}]},
+      {id:"styrofoam",label:"乾淨保麗龍（包裝盒、乾淨保麗龍杯）",fills:[{id:"n",label:"件數"}]},
+      {id:"glass",label:"玻璃類（玻璃瓶、提神飲料等）",fills:[{id:"n",label:"件數"}]},
+      {id:"info",label:"資訊物品（手機、電子電器及光碟片等）",fills:[{id:"n",label:"件數"}]},
+      {id:"battery",label:"廢電池類（鈕扣電池及各式電池等）",fills:[{id:"n",label:"件數"}]},
+      {id:"light",label:"廢照明光源（各式燈管及燈泡等）",fills:[{id:"n",label:"件數"}]},
+      {id:"pressure",label:"廢高壓容器（瓦斯罐、殺蟲劑罐）",fills:[{id:"n",label:"件數"}]},
+      {id:"kitchen",label:"廚餘",fills:[{id:"n",label:"件數"}]},
+      {id:"other",label:"其他",fills:[{id:"txt",label:"品項"},{id:"n",label:"件數"}]}]},
+    {id:"s2",stat:"現場查核情形",title:"現場查核情形",type:"choice",mode:"multi",options:[
+      chip("ok","符合規定"),chip("sort","現場宣導後立即分類"),chip("unwilling","無意願配合分類作業"),chip("reject","民眾拒絕查核"),
+      {id:"other",label:"其他",fills:[{id:"txt",label:""}]},
+      {id:"fix",label:"限期改善",fills:[{id:"deadline",label:"改善期限（勿超過兩週）"}]}]},
+  ],
+  extras:[{id:"situation",label:"稽查狀況"}],extrasTitle:"稽查狀況",
+  signatures:[{id:"inspector",label:"稽查人員"},{id:"target",label:"稽查對象",allowRefuse:true,optional:true}],
+  photoSlots:["稽查地點","稽查情形"],
+  conclusion:["符合規定","限期改善","不符合規定"],
+};
 const FORM_STUBS=[
-  ["bag","F20250402084515","垃圾強制分類破袋稽查","🗑️","破袋"],["community","F20250326153131","社區、機關、學校及團體資源回收情形稽查輔導紀錄表","🏫","資源回收"],
+  ["community","F20250326153131","社區、機關、學校及團體資源回收情形稽查輔導紀錄表","🏫","資源回收"],
   ["mercury","F20250321115655","限制含汞產品輸入使用稽查紀錄表","⚗️","含汞產品"],["overpack","F20250402083443","限制產品過度包裝販賣業者稽查作業紀錄表","📦","過度包裝"],
   ["tray","F20250325114433","限制塑膠類托盤及包裝盒使用稽查紀錄表","🍱","塑膠托盤"],["battery","F20250321154031","乾電池販賣業者稽查作業紀錄單","🔋","乾電池"],
   ["pvc","F20250325112205","禁用PVC食品容器販賣業者稽查作業紀錄單","🚱","PVC容器"],["plastic6","F20250721112041","一次用塑膠製品限制使用稽查記錄單","♻️","塑膠製品"],
   ["online","F20250325105242","網際網路購物包裝限制使用稽查作業紀錄表","🛒","網購包裝"],["noise","F20250324092010","噪音管制稽查紀錄工作單","🔊","噪音"],
   ["construct","F20250317143136","營建工程污染管制巡查紀錄表","🏗️","營建污染"],["hygiene","F20250703135543","環境衛生","🧹","環境衛生"],
 ].map(([id,code,title,icon,short])=>({id,code,title,icon,short,category:"稽查表單",ready:false}));
-const FORMS=[FORM_CUP,FORM_TOWEL,FORM_COSMETIC,...FORM_STUBS];
+const FORMS=[FORM_CUP,FORM_TOWEL,FORM_COSMETIC,FORM_BAG,...FORM_STUBS];
 
 const S={step:0,inspector:null,form:null,target:null,values:{},photos:[],signatures:{},conclusion:null,startTime:null,inspectAt:null,_draftId:null};
 const G={geo:null};
@@ -1089,8 +1125,8 @@ function photoPagesHTML(){const items=S.photos.filter(p=>p.dataUrl||(p.mode==="t
   for(let i=0;i<items.length;i+=4){const g=items.slice(i,i+4);
     pages+=`<div class="pdfpage"><div class="ph1">${CONFIG.AGENCY}</div><div class="ph2">${S.form.title}　照片紀錄</div>
       <table class="ptab"><colgroup><col style="width:50%"><col style="width:50%"></colgroup>
-        <tr><td class="pinfo" colspan="2">名稱：${S.values.name||""}　日期：${inspectRoc()}</td></tr>
-        <tr><td class="pinfo" colspan="2">地址：${S.values.address||""}</td></tr>
+        <tr><td class="pinfo" colspan="2">${S.form.nameLabel||"名稱"}：${S.values.name||""}　日期：${inspectRoc()}</td></tr>
+        ${S.values.address?`<tr><td class="pinfo" colspan="2">地址：${S.values.address}</td></tr>`:""}
         ${chunk2(g).map(pair=>`<tr>${pair.map(p=>{const lab=(p.label||"").trim();const cap=lab||(p.note||"");const extra=(lab&&p.note)?p.note:"";return `<td class="pcell">${p.dataUrl?`<div class="pimg"><img src="${p.dataUrl}"></div>`:`<div class="pimg ptextbox">${(p.text||"").replace(/\n/g,"<br>")}</div>`}${cap?`<div class="pcap">${cap.replace(/\n/g,"<br>")}</div>`:""}${p.dataUrl&&p.capturedAt?`<div class="ptime">${p.capturedAt}</div>`:""}${extra?`<div class="pnote">${extra.replace(/\n/g,"<br>")}</div>`:""}</td>`;}).join("")}${pair.length<2?'<td class="pcell"></td>':""}</tr>`).join("")}
       </table><div class="pfoot" style="text-align:center">判定：${S.conclusion||""}</div></div>`;}
   return pages;}
@@ -1121,7 +1157,7 @@ function openSheet(html){$("#sheet").innerHTML=html;$("#modal").classList.add("o
 function closeSheet(){$("#modal").classList.remove("on");}
 $("#modal").onclick=e=>{if(e.target.id==="modal")closeSheet();};
 window.closeSheet=closeSheet;
-function validateStep(){if(S.step===2&&!S.values.name){toast("請填寫稽查對象名稱");return false;}return true;}
+function validateStep(){if(S.step===2){const req=(S.form.basic||[]).find(f=>f.required);if(req&&!S.values[req.id]){toast("請填寫「"+req.label+"」");return false;}}return true;}
 $("#btnNext").onclick=()=>{if(!validateStep())return;if(S.step<5)goto(S.step+1);};
 $("#btnBack").onclick=()=>{if(S.step>0)goto(S.step-1);};
 $("#agencyLine").textContent=CONFIG.AGENCY;
