@@ -533,6 +533,7 @@ textarea.inp{min-height:70px;resize:vertical}
 .pslot .cap{padding:8px 10px;border-top:1px solid var(--line)}
 .pslot .cap input{border:0;outline:0;width:100%;font-size:13px;font-weight:600;text-align:center;background:transparent;color:var(--ink)}
 .pslot .del,.pslot .toimg{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(20,22,26,.72);color:#fff;font-size:14px;cursor:pointer;z-index:2}
+.reqbadge{position:absolute;top:6px;left:6px;z-index:2;background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
 .pslot .del{display:none}
 .pslot.has .del{display:block}
 .ptextedit{padding:10px;position:relative}
@@ -689,7 +690,7 @@ const FORM_CUP={id:"cup",code:"F20250312113814",category:"源頭減量",icon:"�
   ],
   opinions:[{id:"inspectorOpinion",label:"稽查人員意見陳述"},{id:"targetOpinion",label:"限制使用對象意見陳述"}],
   signatures:[{id:"inspector",label:"稽查人員"},{id:"target",label:"限制使用對象",allowRefuse:true},{id:"accompany",label:"會同單位人員",optional:true}],
-  photoSlots:["大門外觀","門牌","飲料杯樣式","自備環保杯折扣"],conclusion:["符合規定","不符合規定","限期改善"],
+  photoSlots:[{label:"大門外觀",req:true},"門牌",{label:"飲料杯樣式",req:true},"自備環保杯折扣"],conclusion:["符合規定","不符合規定","限期改善"],
 };
 const FORM_TOWEL={id:"towel",code:"F20250321115252",category:"源頭減量",icon:"🧴",ready:true,short:"旅宿用品",
   title:"一次用旅宿用品限制使用對象及實施方式稽查紀錄單",
@@ -722,7 +723,7 @@ const FORM_TOWEL={id:"towel",code:"F20250321115252",category:"源頭減量",icon
   ],
   opinions:[{id:"inspectorOpinion",label:"稽查人員意見陳述"},{id:"targetOpinion",label:"限制使用對象意見陳述"}],
   signatures:[{id:"inspector",label:"稽查人員"},{id:"accompany",label:"會同單位人員",optional:true},{id:"target",label:"限制使用對象",allowRefuse:true}],
-  photoSlots:["大門外觀","門牌","旅館合法認證","登記證","不提供一次用旅宿用品標語","客房現況","客房衛浴現況（一）","客房衛浴現況（二）"],
+  photoSlots:[{label:"大門外觀",req:true},"門牌","旅館合法認證","登記證",{label:"不提供一次用旅宿用品標語",req:true},{label:"客房現況",req:true},{label:"客房衛浴現況（一）",req:true},"客房衛浴現況（二）"],
   conclusion:["符合規定","不符合規定","限期改善"],
 };
 const FORM_COSMETIC={id:"cosmetic",code:"F20250402084421",category:"源頭減量",icon:"🧼",ready:true,short:"化粧品",
@@ -755,7 +756,7 @@ const FORM_COSMETIC={id:"cosmetic",code:"F20250402084421",category:"源頭減量
   extrasTitle:"取樣之化粧品與個人清潔用品資料（製造輸入業名稱、產品名稱、容量、製造輸入日期、數量）",
   opinions:[{id:"targetOpinion",label:"稽查對象意見陳述"}],
   signatures:[{id:"inspector",label:"稽查人員"},{id:"accompany",label:"會同單位",optional:true},{id:"target",label:"稽查對象",allowRefuse:true}],
-  photoSlots:["店家外觀","門牌","疑似含塑膠微粒產品","產品成分標示"],
+  photoSlots:[{label:"店家外觀",req:true},"門牌","疑似含塑膠微粒產品",{label:"產品成分標示",req:true}],
   conclusion:["符合規定","不符合規定"],
 };
 const FORM_BAG={id:"bag",code:"F20250402084515",category:"分類回收",icon:"🗑️",ready:true,short:"破袋",nameLabel:"地點",
@@ -791,18 +792,245 @@ const FORM_BAG={id:"bag",code:"F20250402084515",category:"分類回收",icon:"�
   ],
   extras:[{id:"situation",label:"稽查狀況"}],extrasTitle:"稽查狀況",
   signatures:[{id:"inspector",label:"稽查人員"},{id:"target",label:"稽查對象",allowRefuse:true,optional:true}],
-  photoSlots:["稽查地點","稽查情形"],
+  photoSlots:[{label:"稽查地點",req:true},{label:"稽查情形",req:true}],
+  conclusion:["符合規定","限期改善","不符合規定"],
+};
+const FORM_COMMUNITY={id:"community",code:"F20250326153131",category:"分類回收",icon:"🏫",ready:true,short:"資源回收",nameLabel:"單位",
+  title:"社區、機關、學校及團體資源回收情形稽查輔導紀錄表",basicTitle:"基本資料",
+  basic:[
+    {id:"name",label:"單位名稱",type:"text",required:true},
+    {id:"phone",label:"聯絡電話",type:"text",half:true},
+    {id:"address",label:"單位地址",type:"text",full:true},
+    {id:"manager",label:"管理人員",type:"text"},
+    {id:"unitType",label:"單位類別",type:"choice",mode:"single",inline:true,half:true,options:[chip("community","社區"),chip("school","學校"),chip("gov","機關"),chip("group","團體")]},
+
+    {id:"h1",label:"垃圾分類工作執行狀況",type:"heading"},
+    {id:"pop",label:"單位人口數／戶數",type:"composite",parts:[{id:"people",label:"人口數"},{id:"house",label:"戶數"}]},
+    {id:"sorted",label:"一般廢棄物是否確實分類",type:"choice",mode:"single",inline:true,options:[chip("y","是"),chip("n","否")]},
+    {id:"sortedContain",label:"（否）內含",type:"choice",mode:"multi",inline:true,options:[chip("res","資源垃圾"),chip("food","廚餘")]},
+    {id:"wasteFlow",label:"一般廢棄物清運流向",type:"choice",mode:"single",inline:true,options:[chip("team","清潔隊"),{id:"other",label:"其他或委託",fills:[{id:"txt",label:""}]}]},
+    {id:"hasBin",label:"是否設置資源垃圾回收筒",type:"choice",mode:"single",inline:true,options:[chip("y","是"),chip("n","否")]},
+    {id:"binMark",label:"回收筒是否標示回收物名稱",type:"choice",mode:"single",inline:true,options:[{id:"y",label:"是",fills:[{id:"kind",label:"種類"}]},chip("n","否")]},
+    {id:"hasNonRes",label:"回收設施內是否有非資源回收物",type:"choice",mode:"single",inline:true,options:[chip("y","是"),chip("n","否")]},
+    {id:"clean",label:"回收設施與地面是否清潔完整且無惡臭",type:"choice",mode:"single",inline:true,options:[chip("y","是"),chip("n","否")]},
+    {id:"report",label:"是否自行定期回報回收量至環保局",type:"choice",mode:"single",inline:true,options:[chip("y","是"),chip("n","否")]},
+    {id:"resFlow",label:"回收物清運流向",type:"choice",mode:"multi",inline:true,options:[chip("dealer","回收商"),chip("team","清潔隊"),chip("solo","個體業者"),{id:"other",label:"其他或委託",fills:[{id:"txt",label:""}]}]},
+    {id:"resAmount",label:"每月資源回收量（公斤）",type:"text"},
+
+    {id:"h2",label:"廚餘回收工作執行狀況",type:"heading"},
+    {id:"foodBin",label:"是否設置廚餘回收筒",type:"choice",mode:"single",inline:true,options:[chip("y","是"),chip("n","否")]},
+    {id:"foodAmount",label:"每月廚餘產生量（公斤）",type:"text"},
+    {id:"foodFlow",label:"廚餘回收流向及再利用方式（可複選，總和須等於產生量）",type:"choice",mode:"multi",options:[
+      {id:"team",label:"清潔隊",fills:[{id:"kg",label:"公斤/月"}]},{id:"compost",label:"自行堆肥",fills:[{id:"kg",label:"公斤/月"}]},
+      {id:"enzyme",label:"自製酵素",fills:[{id:"kg",label:"公斤/月"}]},{id:"bsf",label:"黑水虻",fills:[{id:"kg",label:"公斤/月"}]},
+      {id:"entrust",label:"委託清運",fills:[{id:"kg",label:"公斤/月"},{id:"vendor",label:"廠商"}]},{id:"other",label:"其他",fills:[{id:"txt",label:""}]}]},
+
+    {id:"h3",label:"特定物品單獨回收狀況（勾選＝是，並填公斤/月）",type:"heading"},
+    {id:"special",label:"特定物品",type:"choice",mode:"multi",options:[
+      {id:"glass",label:"玻璃瓶",fills:[{id:"kg",label:"公斤/月"}]},{id:"drybat",label:"乾電池",fills:[{id:"kg",label:"公斤/月"}]},
+      {id:"libat",label:"鋰電池（含行動電源）",fills:[{id:"kg",label:"公斤/月"}]},{id:"pressure",label:"高壓容器",fills:[{id:"kg",label:"公斤/月"}]},
+      {id:"other",label:"其他",fills:[{id:"txt",label:""}]}]},
+  ],
+  sections:[],
+  extras:[{id:"remark",label:"備註"}],extrasTitle:"備註",
+  opinions:[],
+  signatures:[{id:"target",label:"稽查對象",allowRefuse:true,optional:true},{id:"inspector",label:"巡查人員"}],
+  photoSlots:[{label:"外觀",req:true},"門牌",{label:"資源回收設施",req:true},{label:"回收筒標示",req:true},"廚餘回收設施","整體環境"],
+  conclusion:["符合規定","待改善輔導"],
+};
+const FORM_MERCURY={id:"mercury",code:"F20250321115655",category:"源頭減量",icon:"⚗️",ready:true,short:"含汞產品",
+  title:"限制含汞產品輸入使用稽查紀錄表",basicTitle:"稽查對象基本資料",
+  basic:[
+    {id:"name",label:"名稱",type:"text",required:true,full:true},
+    {id:"owner",label:"負責人",type:"text"},
+    {id:"phone",label:"電話",type:"text",half:true},
+    {id:"address",label:"地址",type:"text",full:true},
+    {id:"placeType",label:"營業場所類型",type:"choice",mode:"single",inline:true,options:[chip("med","醫療機構"),chip("nonmed","非醫療機構")]},
+
+    {id:"hp1",label:"稽查過程",type:"heading"},
+    {id:"display",label:"販賣場所是否陳列水銀溫度計",type:"choice",mode:"single",inline:true,options:[chip("y","是"),chip("n","否")]},
+    {id:"sell",label:"販賣場所是否有販賣或贈送行為",type:"choice",mode:"single",inline:true,options:[chip("y","是"),chip("n","否")]},
+    {id:"sellTarget",label:"（若是）販賣或贈送對象",type:"choice",mode:"multi",inline:true,options:[chip("med","醫療機構"),chip("nonmed","非醫療機構")]},
+    {id:"stock",label:"販賣場所是否庫存水銀溫度計",type:"choice",mode:"single",inline:true,options:[{id:"y",label:"是",fills:[{id:"date",label:"進貨日期"}]},chip("n","否")]},
+    {id:"vendor1",label:"上游業者一（公司名稱／品項／支數／負責人／電話／地址）",type:"textarea"},
+    {id:"vendor2",label:"上游業者二（公司名稱／品項／支數／負責人／電話／地址）",type:"textarea"},
+    {id:"vendor3",label:"上游業者三（公司名稱／品項／支數／負責人／電話／地址）",type:"textarea"},
+
+    {id:"hp2",label:"現場稽查及處理情形",type:"heading"},
+    {id:"result",label:"稽查結果",type:"choice",mode:"multi",options:[
+      chip("noViolation","無違規情形"),
+      {id:"noSell",label:"無販賣或贈送水銀體溫計",indent:true},
+      {id:"before2011",label:"於100年7月1日前（不含7月1日當日）販賣或贈送水銀體溫計與醫療機構",indent:true},
+      chip("hasViolation","有違規情形"),
+      {id:"vPublic3",label:"違反公告事項三，未依規定販賣或贈送水銀體溫計",indent:true},
+      {id:"vOther",label:"其他違反情形",indent:true,fills:[{id:"txt",label:""}]}]},
+    {id:"verify",label:"相關違規查證情形敘述",type:"textarea"},
+  ],
+  sections:[],
+  extras:[],
+  opinions:[{id:"targetOpinion",label:"稽查對象意見陳述"}],
+  signatures:[{id:"inspector",label:"稽查人員"},{id:"accompany",label:"會同單位",optional:true},{id:"target",label:"稽查對象",allowRefuse:true}],
+  photoSlots:[{label:"外觀",req:true},"門牌",{label:"陳列或庫存現況",req:true},"水銀溫度計"],
+  conclusion:["無違規情形","有違規情形"],
+};
+const CAT7=[chip("egg","蛋類"),chip("veg","蔬果類"),chip("meat","肉品類"),chip("sea","水產類"),chip("bakery","糕餅麵包類"),chip("food","餐飲食品類"),chip("other","其他類")];
+const FORM_OVERPACK={id:"overpack",code:"F20250402083443",category:"源頭減量",icon:"📦",ready:true,short:"過度包裝",
+  title:"限制產品過度包裝販賣業者稽查作業紀錄表",basicTitle:"稽查對象基本資料",
+  basic:[
+    {id:"name",label:"事業名稱",type:"text",required:true,full:true},
+    {id:"phone",label:"電話",type:"text"},{id:"fax",label:"傳真",type:"text",half:true},
+    {id:"address",label:"地址",type:"text",full:true},
+    {id:"email",label:"E-Mail／網址",type:"text",full:true},
+    {id:"owner",label:"負責人姓名",type:"text"},
+  ],
+  sections:[
+    {id:"s1",stat:"疑似過度包裝品項",title:"稽查結果（勾選並填件數）",type:"choice",mode:"multi",options:[
+      {id:"cake",label:"糕餅禮盒",fills:[{id:"n",label:"件數"},{id:"susp",label:"疑似過度包裝"}]},
+      {id:"processed",label:"加工食品禮盒",fills:[{id:"n",label:"件數"},{id:"susp",label:"疑似過度包裝"}]},
+      {id:"wine",label:"酒禮盒",fills:[{id:"n",label:"件數"},{id:"susp",label:"疑似過度包裝"}]},
+      {id:"cosmetic",label:"化粧品禮盒",fills:[{id:"n",label:"件數"},{id:"susp",label:"疑似過度包裝"}]},
+      {id:"cd",label:"電腦程式著作光碟",fills:[{id:"n",label:"件數"},{id:"susp",label:"疑似過度包裝"}]}]},
+    {id:"s2",stat:"現場處理情形",title:"現場稽查及處理情形",type:"choice",mode:"multi",options:[
+      chip("ok","無違規情形"),chip("violate","有違規情形"),
+      {id:"vShoot",label:"拒絕提供產品供拍攝記錄或取樣，違反資源回收再利用法第21條及公告事項十五",indent:true},
+      {id:"vData",label:"規避、妨礙或拒絕提供下列資料，違反資源回收再利用法第21條及公告事項十七",indent:true},
+      {id:"dCatalog",label:"指定產品之型錄",indent:true},{id:"dBuyer",label:"銷售對象",indent:true},{id:"dTime",label:"銷售時間",indent:true},
+      {id:"dSource",label:"進貨來源",indent:true},{id:"dInTime",label:"進貨時間",indent:true},
+      {id:"vOther",label:"其他違反情形",indent:true,fills:[{id:"txt",label:""}]}]},
+  ],
+  extras:[{id:"remark",label:"備註"}],extrasTitle:"備註",
+  opinions:[],
+  signatures:[{id:"inspector",label:"稽查人員"},{id:"accompany",label:"會同人員",optional:true},{id:"target",label:"事業代表",allowRefuse:true}],
+  photoSlots:[{label:"外觀",req:true},"門牌"],
+  conclusion:["無違規情形","有違規情形"],
+};
+const FORM_TRAY={id:"tray",code:"F20250325114433",category:"源頭減量",icon:"🍱",ready:true,short:"塑膠托盤",
+  title:"限制塑膠類托盤及包裝盒使用稽查紀錄表",basicTitle:"公司基本資料",
+  basic:[
+    {id:"category",label:"類別",type:"choice",mode:"single",inline:true,options:[chip("hyper","量販店"),chip("super","超級市場")]},
+    {id:"name",label:"名稱",type:"text",required:true},
+    {id:"owner",label:"負責人姓名",type:"text",half:true},
+    {id:"address",label:"地址",type:"text",full:true},
+    {id:"phone",label:"電話",type:"text"},
+  ],
+  sections:[
+    {id:"s1",stat:"查核結果",title:"查核結果",type:"choice",mode:"multi",options:[
+      chip("notDesignated","非屬指定公私場所"),chip("newSite","新設立之指定公私場所"),
+      chip("meet","減量情形符合計畫書內容"),chip("notMeet","減量情形不符合計畫書內容")]},
+    {id:"s2",stat:"未用替代容器類別",title:"（不符）未依減量計畫使用替代容器之產品類別",type:"choice",mode:"multi",inline:true,options:CAT7},
+    {id:"s3",stat:"未減輕重量類別",title:"（不符）未依減量計畫減輕指定容器重量比例之產品類別",type:"choice",mode:"multi",inline:true,options:CAT7},
+    {id:"s4",stat:"其他不符情形",title:"（不符）其他情形",type:"choice",mode:"multi",options:[
+      chip("noChange","未依減量計畫改為不使用托盤或包裝盒包裝"),
+      {id:"lowRatio",label:"實際減量比例明顯低於公告規定（100年35%、101年40%）",fills:[{id:"reason",label:"原因"}]},
+      {id:"other",label:"其他",fills:[{id:"txt",label:""}]}]},
+    {id:"s5",stat:"處理情形",title:"處理情形",type:"choice",mode:"multi",options:[
+      chip("release","非屬指定公私場所，解除列管"),
+      chip("notify","新設立之指定公私場所，另以書面通知公告規定"),
+      chip("seasonal","部分屬季節性商品，將擇期再查"),
+      chip("firstFix","首次不符合計畫書內容，限期於30日內申請減量計畫書變更"),
+      chip("penalty","依資源回收再利用法第26條第1項第2款規定處分"),
+      {id:"other",label:"其他",fills:[{id:"txt",label:""}]}]},
+  ],
+  extras:[],
+  opinions:[{id:"targetOpinion",label:"稽查對象意見陳述"}],
+  signatures:[{id:"inspector",label:"稽查人員"},{id:"accompany",label:"會同單位",optional:true},{id:"target",label:"稽查對象",allowRefuse:true}],
+  photoSlots:[{label:"外觀",req:true},"門牌",{label:"包裝陳列現況",req:true},"產品標示"],
+  conclusion:["符合規定","不符合規定"],
+};
+const FORM_BATTERY={id:"battery",code:"F20250321154031",category:"源頭減量",icon:"🔋",ready:true,short:"乾電池",
+  title:"乾電池販賣業者稽查作業紀錄單",basicTitle:"稽查對象基本資料",
+  basic:[
+    {id:"name",label:"名稱",type:"text",required:true},
+    {id:"phone",label:"電話",type:"text",half:true},
+    {id:"address",label:"地址",type:"text",full:true},
+    {id:"inspectType",label:"稽查類型",type:"choice",mode:"multi",inline:true,options:[chip("designated","指定電池"),chip("attached","附指定電池物品"),chip("both","以上皆是")]},
+    {id:"placeType",label:"販賣場所類別",type:"choice",mode:"single",options:[
+      chip("dept","百貨公司"),chip("army","國軍福利品供應站"),chip("hyper","量販店"),chip("super","超級市場"),chip("cvs","連鎖便利商店"),
+      chip("digital","資訊家電賣場"),chip("camera","通信攝影器材零售店"),chip("retail","零售商店"),chip("book","書局"),chip("drugstore","藥妝店"),chip("vendor","攤販"),
+      {id:"other",label:"其他",fills:[{id:"txt",label:""}]}]},
+  ],
+  sections:[
+    {id:"s1",stat:"稽查過程",title:"稽查過程（勾選並填件數）",type:"choice",mode:"multi",options:[
+      {id:"sellDesignated",label:"販賣指定電池",fills:[{id:"n",label:"販賣件數"},{id:"chk",label:"稽查件數"}]},
+      {id:"sellAttached",label:"販賣附指定電池物品",fills:[{id:"n",label:"販賣件數"},{id:"chk",label:"稽查件數"}]},
+      {id:"sample",label:"指定電池取樣",fills:[{id:"n",label:"件數"}]}]},
+    {id:"s2",stat:"現場稽查結果",title:"現場稽查結果",type:"choice",mode:"multi",options:[
+      chip("ok","符合規定"),
+      {id:"guided",label:"現場完成輔導改善",fills:[{id:"note",label:"備註"}]},
+      {id:"released",label:"解除列管",fills:[{id:"note",label:"備註"}]},
+      chip("violate","有違規情形，違反廢棄物清理法第21條"),
+      {id:"vConfirm",label:"指定電池未依公告事項五取得確認文件",indent:true},
+      {id:"vMark",label:"指定電池、附指定電池物品未依公告事項四進行標示",indent:true},
+      {id:"vReject",label:"未依公告事項十二配合檢查或拒絕提供指定電池供查驗或拒絕提供相關資料",indent:true},
+      {id:"vOther",label:"其他違反情形",indent:true,fills:[{id:"txt",label:""}]}]},
+  ],
+  extras:[{id:"sample1",label:"取樣樣本一"},{id:"sample2",label:"取樣樣本二"},{id:"sample3",label:"取樣樣本三"}],
+  extrasTitle:"取樣之電池資料（製造輸入業名稱、品牌、型式、形狀、尺寸、數量）",
+  opinions:[{id:"targetOpinion",label:"稽查對象意見陳述"}],
+  signatures:[{id:"inspector",label:"稽查人員"},{id:"accompany",label:"會同單位",optional:true},{id:"target",label:"稽查對象",allowRefuse:true}],
+  photoSlots:[{label:"外觀",req:true},"門牌",{label:"電池陳列",req:true},"電池標示"],
+  conclusion:["符合規定","有違規情形"],
+};
+const CUT6=[chip("cup","杯"),chip("bowl","碗"),chip("plate","盤"),chip("dish","碟"),chip("box","餐盒"),chip("boxtray","餐盒內盤")];
+const CUT11=CUT6.concat([chip("chop","筷"),chip("spoon","湯匙"),chip("knife","刀"),chip("fork","叉"),chip("stir","攪拌棒")]);
+/* 各類法規之管制（限制使用）對象 */
+const OBJ_BAG=[chip("gov","政府部門"),chip("army","國軍福利品供應站"),chip("pubschool","公立學校"),chip("pubhosp","公立醫療院所"),chip("prischool","私立學校"),chip("dept","百貨公司業及購物中心"),chip("hyper","量販店業"),chip("super","超級市場業"),chip("cvs","連鎖便利商店業"),chip("fastfood","連鎖速食店"),chip("drugstore","藥粧、美粧店及藥局"),chip("medical","醫療器材行"),chip("3c","家電攝影、資訊及通訊設備零售業"),chip("book","書籍及文具零售業"),chip("laundry","洗衣店業"),chip("drink","飲料店業"),chip("bakery","西點麵包店業")];
+const OBJ_PLCUT=[chip("gov_pri","公部門與私立學校（餐廳／其他餐飲）"),chip("dept","百貨公司業及購物中心"),chip("hyper","量販店業"),chip("super","超級市場業"),chip("cvs","連鎖便利商店業"),chip("fastfood","連鎖速食店"),chip("dinein","有店面之餐飲業")];
+const OBJ_ALLCUT=[chip("gov","政府部門"),chip("pubschool","公立學校"),chip("prischool","私立學校"),chip("dept","百貨公司業"),chip("mall","購物中心"),chip("hyper","量販店業")];
+const OBJ_STRAW=[chip("gov","政府部門"),chip("school","學校"),chip("dept","百貨公司業及購物中心"),chip("fastfood","連鎖速食店")];
+const FORM_PLASTIC6={id:"plastic6",code:"F20250721112041",category:"源頭減量",icon:"♻️",ready:true,short:"塑膠製品",
+  title:"一次用塑膠製品限制使用稽查記錄單",basicTitle:"限制使用對象基本資料",
+  basic:[
+    {id:"mode",label:"本次稽查類型（先選擇，下方才顯示對應對象與項目）",type:"choice",mode:"single",required:true,options:[
+      chip("bag","購物用塑膠袋"),chip("plcut","塑膠類免洗餐具"),chip("allcut","各類免洗餐具"),chip("straw","一次用塑膠吸管")]},
+    {id:"name",label:"名稱",type:"text",required:true},
+    {id:"taxId",label:"統編",type:"text",half:true},
+    {id:"phone",label:"電話",type:"text"},
+    {id:"address",label:"地址",type:"text",full:true},
+
+    {id:"h1",label:"（一）購物用塑膠袋限制使用",type:"heading",showIf:{field:"mode",val:"bag"}},
+    {id:"bagObject",label:"限制使用對象",type:"choice",mode:"single",showIf:{field:"mode",val:"bag"},options:OBJ_BAG},
+    {id:"bagResult",label:"查核結果",type:"choice",mode:"multi",inline:true,showIf:{field:"mode",val:"bag"},options:[chip("ok","符合規定"),chip("na","非屬列管對象"),chip("refuse","規避、妨礙或拒絕檢查")]},
+    {id:"bagRemain",label:"購物用塑膠袋目前剩餘數量",type:"text",showIf:{field:"mode",val:"bag"}},
+
+    {id:"h2",label:"（二）塑膠類免洗餐具限制使用",type:"heading",showIf:{field:"mode",val:"plcut"}},
+    {id:"plcutObject",label:"限制使用對象",type:"choice",mode:"single",showIf:{field:"mode",val:"plcut"},options:OBJ_PLCUT},
+    {id:"plcutResult",label:"查核結果",type:"choice",mode:"multi",inline:true,showIf:{field:"mode",val:"plcut"},options:[chip("ok","符合規定"),chip("none","無提供"),chip("provide","提供塑膠類免洗餐具"),chip("refuse","規避、妨礙或拒絕檢查")]},
+    {id:"plcutItems",label:"品項",type:"choice",mode:"multi",inline:true,showIf:{field:"mode",val:"plcut"},options:CUT6},
+    {id:"plcutMaterial",label:"材質",type:"text",half:true,showIf:{field:"mode",val:"plcut"}},
+    {id:"plcutRemain",label:"目前剩餘數量",type:"text",showIf:{field:"mode",val:"plcut"}},
+
+    {id:"h3",label:"（三）各類免洗餐具限制使用",type:"heading",showIf:{field:"mode",val:"allcut"}},
+    {id:"allcutObject",label:"限制使用對象",type:"choice",mode:"single",showIf:{field:"mode",val:"allcut"},options:OBJ_ALLCUT},
+    {id:"allcutResult",label:"查核結果",type:"choice",mode:"multi",inline:true,showIf:{field:"mode",val:"allcut"},options:[chip("ok","符合規定"),chip("provide","提供各類材質免洗餐具"),chip("refuse","規避、妨礙或拒絕檢查")]},
+    {id:"allcutItems",label:"品項",type:"choice",mode:"multi",inline:true,showIf:{field:"mode",val:"allcut"},options:CUT11},
+    {id:"allcutMaterial",label:"材質",type:"text",half:true,showIf:{field:"mode",val:"allcut"}},
+    {id:"allcutRemain",label:"目前剩餘數量",type:"text",showIf:{field:"mode",val:"allcut"}},
+
+    {id:"h4",label:"（四）一次用塑膠吸管限制使用（僅限內食餐飲）",type:"heading",showIf:{field:"mode",val:"straw"}},
+    {id:"strawObject",label:"限制使用對象",type:"choice",mode:"single",showIf:{field:"mode",val:"straw"},options:OBJ_STRAW},
+    {id:"strawResult",label:"查核結果",type:"choice",mode:"multi",inline:true,showIf:{field:"mode",val:"straw"},options:[chip("ok","符合規定"),chip("none","無提供"),chip("provide","提供一次用塑膠吸管予消費者內食餐飲使用"),chip("refuse","規避、妨礙或拒絕檢查")]},
+    {id:"strawAlt",label:"替代品項",type:"choice",mode:"multi",inline:true,showIf:{field:"mode",val:"straw"},options:[chip("bio","生物可分解"),chip("cup","就口杯"),chip("paper","紙吸管"),{id:"other",label:"其他",fills:[{id:"txt",label:""}]}]},
+    {id:"strawRemain",label:"目前剩餘數量",type:"text",showIf:{field:"mode",val:"straw"}},
+
+    {id:"h5",label:"（五）違規處理情形",type:"heading"},
+    {id:"penalty",label:"違規處理",type:"choice",mode:"multi",options:[
+      {id:"advise",label:"開立勸導單，應於下列日期完成改正",fills:[{id:"date",label:"完成改正日期"}]},
+      {id:"fine",label:"依廢棄物清理法第51條第3項規定，處新臺幣1,200元以上6,000元以下罰鍰，並限期完成改善",fills:[{id:"date",label:"完成改善日期"}]}]},
+  ],
+  sections:[],
+  extras:[],
+  opinions:[{id:"inspectorOpinion",label:"稽查人員意見陳述"},{id:"targetOpinion",label:"限制使用對象意見陳述"}],
+  signatures:[{id:"inspector",label:"稽查人員"},{id:"accompany",label:"會同單位人員",optional:true},{id:"target",label:"限制使用對象",allowRefuse:true}],
+  photoSlots:[{label:"店家外觀",req:true},"門牌",{label:"稽查項目現況",req:true},"使用量／剩餘數量"],
   conclusion:["符合規定","限期改善","不符合規定"],
 };
 const FORM_STUBS=[
-  ["community","F20250326153131","社區、機關、學校及團體資源回收情形稽查輔導紀錄表","🏫","資源回收"],
-  ["mercury","F20250321115655","限制含汞產品輸入使用稽查紀錄表","⚗️","含汞產品"],["overpack","F20250402083443","限制產品過度包裝販賣業者稽查作業紀錄表","📦","過度包裝"],
-  ["tray","F20250325114433","限制塑膠類托盤及包裝盒使用稽查紀錄表","🍱","塑膠托盤"],["battery","F20250321154031","乾電池販賣業者稽查作業紀錄單","🔋","乾電池"],
-  ["pvc","F20250325112205","禁用PVC食品容器販賣業者稽查作業紀錄單","🚱","PVC容器"],["plastic6","F20250721112041","一次用塑膠製品限制使用稽查記錄單","♻️","塑膠製品"],
+  ["pvc","F20250325112205","禁用PVC食品容器販賣業者稽查作業紀錄單","🚱","PVC容器"],
   ["online","F20250325105242","網際網路購物包裝限制使用稽查作業紀錄表","🛒","網購包裝"],["noise","F20250324092010","噪音管制稽查紀錄工作單","🔊","噪音"],
   ["construct","F20250317143136","營建工程污染管制巡查紀錄表","🏗️","營建污染"],["hygiene","F20250703135543","環境衛生","🧹","環境衛生"],
 ].map(([id,code,title,icon,short])=>({id,code,title,icon,short,category:"稽查表單",ready:false}));
-const FORMS=[FORM_CUP,FORM_TOWEL,FORM_COSMETIC,FORM_BAG,...FORM_STUBS];
+const FORMS=[FORM_CUP,FORM_TOWEL,FORM_COSMETIC,FORM_BAG,FORM_COMMUNITY,FORM_MERCURY,FORM_OVERPACK,FORM_TRAY,FORM_BATTERY,FORM_PLASTIC6,...FORM_STUBS];
 
 const S={step:0,inspector:null,form:null,target:null,values:{},photos:[],signatures:{},conclusion:null,startTime:null,inspectAt:null,_draftId:null};
 const G={geo:null};
@@ -923,29 +1151,31 @@ function renderComposite(f){const wrap=el("div","fld");wrap.appendChild(el("labe
   f.parts.forEach(p=>{const cell=el("div","two-col-label");cell.appendChild(el("span",null,p.label));const inp=el("input","inp");inp.type="number";inp.inputMode="numeric";
     inp.value=getV(f.id+"."+p.id)||"";inp.oninput=e=>setText(f.id+"."+p.id,e.target.value);cell.appendChild(inp);g.appendChild(cell);});
   wrap.appendChild(g);return wrap;}
-function renderField(f){if(f.type==="choice")return renderChoiceField(f);if(f.type==="composite")return renderComposite(f);return renderTextField(f);}
+function renderField(f){if(f.type==="heading")return el("div","block-title",f.label);if(f.type==="choice")return renderChoiceField(f);if(f.type==="composite")return renderComposite(f);return renderTextField(f);}
 function renderTimeField(){const wrap=el("div","fld");
   wrap.innerHTML=`<label class="q">稽查時間 <span class="timehint">（預設抓現場第一張照片時間，可手動修改）</span></label>`;
   const inp=el("input","inp");inp.type="datetime-local";inp.value=effInspectIso();
   inp.onchange=e=>{S.inspectAt=e.target.value||null;renderFill();};wrap.appendChild(inp);return wrap;}
+function fieldVisible(f){if(!f.showIf)return true;const c=f.showIf;return isSel(c.field,c.val);}
+function isFilled(f){const v=S.values[f.id];if(f.type==="choice")return !!(v&&Object.values(v).some(Boolean));if(f.type==="composite")return f.parts.some(p=>S.values[f.id+"."+p.id]);return !!v;}
 function renderFill(){const F=S.form;$("#fillTitle").textContent=F.title;
   $("#fillSub").innerHTML=`稽查時間 ${inspectFull()}　<span class="mono">${F.code}</span>`;
   const b=$("#fillBody");b.innerHTML="";
   b.appendChild(el("div","block-title","稽查時間"));b.appendChild(renderTimeField());
-  b.appendChild(el("div","block-title",F.basicTitle||"稽查對象基本資料"));F.basic.forEach(f=>b.appendChild(renderField(f)));
-  b.appendChild(el("div","block-title","現場稽查及處理情形"));F.sections.forEach(s=>b.appendChild(renderChoiceField({...s,label:s.title})));
+  b.appendChild(el("div","block-title",F.basicTitle||"稽查對象基本資料"));F.basic.forEach(f=>{if(!fieldVisible(f))return;b.appendChild(renderField(f));});
+  if(F.sections&&F.sections.length){b.appendChild(el("div","block-title","現場稽查及處理情形"));F.sections.forEach(s=>b.appendChild(renderChoiceField({...s,label:s.title})));}
   if(F.extras&&F.extras.length){b.appendChild(el("div","block-title",F.extrasTitle||"其他填寫"));F.extras.forEach(o=>b.appendChild(renderTextField({...o,type:"textarea"})));}
   if(F.opinions&&F.opinions.length){b.appendChild(el("div","block-title","意見陳述"));F.opinions.forEach(o=>b.appendChild(renderTextField({...o,type:"textarea"})));}}
 
 function requestGeo(){if(G.geo||!navigator.geolocation)return;
   try{navigator.geolocation.getCurrentPosition(p=>{G.geo={lat:p.coords.latitude,lng:p.coords.longitude};},()=>{},{timeout:6000,maximumAge:60000});}catch(e){}}
-function ensurePhotoSlots(){if(!S.photos.length)S.photos=(S.form.photoSlots||[]).map(l=>({label:l,dataUrl:null,capturedAt:null,mode:null,text:"",note:""}));}
+function ensurePhotoSlots(){if(!S.photos.length)S.photos=(S.form.photoSlots||[]).map(s=>{const o=typeof s==="string"?{label:s}:s;return{label:o.label,req:!!o.req,dataUrl:null,capturedAt:null,mode:null,text:"",note:""};});}
 function renderPhotos(){ensurePhotoSlots();const grid=$("#photoGrid");grid.innerHTML="";
   S.photos.forEach((p,i)=>{const has=p.dataUrl||p.mode==="text";const slot=el("div","pslot"+(has?" has":""));
-    let inner="";
-    if(p.mode==="text"){inner=`<button class="toimg" title="改用照片">📷</button><div class="ptextedit"><div class="tlabel">無法拍照時，改填文字說明：</div><textarea placeholder="例如：現場無販售、拒絕拍攝、大門深鎖…">${p.text||""}</textarea></div>`;}
-    else if(p.dataUrl){inner=`<div class="ph"><img src="${p.dataUrl}"><button class="del">✕</button></div>`;}
-    else{inner=`<div class="ph"><div class="plus"><div class="ic">📷</div><small>拍照 / 選取照片 / 文字</small></div></div>`;}
+    let inner=p.req?`<span class="reqbadge">必拍</span>`:"";
+    if(p.mode==="text"){inner+=`<button class="toimg" title="改用照片">📷</button><div class="ptextedit"><div class="tlabel">無法拍照時，改填文字說明：</div><textarea placeholder="例如：現場無販售、拒絕拍攝、大門深鎖…">${p.text||""}</textarea></div>`;}
+    else if(p.dataUrl){inner+=`<div class="ph"><img src="${p.dataUrl}"><button class="del">✕</button></div>`;}
+    else{inner+=`<div class="ph"><div class="plus"><div class="ic">📷</div><small>拍照 / 選取照片 / 文字</small></div></div>`;}
     const noteRow=p.mode==="text"?"":`<div class="cap"><input class="pnoteinp" value="${(p.note||"").replace(/"/g,"&quot;")}" placeholder="備註（照片說明，選填）"></div>`;
     slot.innerHTML=inner+`<div class="cap"><input class="plabelinp" value="${(p.label||"").replace(/"/g,"&quot;")}" placeholder="欄位名稱"></div>`+noteRow;
     const phEl=slot.querySelector(".ph");if(phEl&&!p.dataUrl)phEl.onclick=()=>openPhotoMenu(i);
@@ -1053,7 +1283,8 @@ function choiceText(field){const sel=S.values[field.id]||{};const parts=[];
   return parts.join("、");}
 function flattenForSheet(){const F=S.form,V=S.values,rows=[];
   rows.push(["稽查時間",inspectFull()]);rows.push(["稽查員",S.inspector.name]);rows.push(["員編",S.inspector.id]);
-  F.basic.forEach(f=>{if(f.type==="text")rows.push([f.label,V[f.id]||""]);
+  F.basic.forEach(f=>{if(f.type==="heading")return;if(!fieldVisible(f))return;
+    if(f.type==="text"||f.type==="textarea")rows.push([f.label,V[f.id]||""]);
     else if(f.type==="choice")rows.push([f.label,choiceText(f)]);
     else if(f.type==="composite")f.parts.forEach(p=>rows.push([p.label,V[f.id+"."+p.id]||""]));});
   F.sections.forEach(s=>rows.push([s.stat||s.title,choiceText(s)]));
@@ -1085,7 +1316,7 @@ async function finish(){const btn=$("#btnFinish");btn.disabled=true;btn.innerHTM
     $("#again").onclick=()=>{resetSession();goto(1);};if(!synced&&CONFIG.SYNC_URL)toast("目前無法連線，已在本機產出，草稿保留待補傳");
   }catch(err){console.error(err);toast("產出失敗："+err.message);btn.disabled=false;btn.textContent="重新產出 PDF 並同步";}}
 function resetSession(){Object.assign(S,{form:null,target:null,values:{},photos:[],signatures:{},conclusion:null,startTime:S.inspector?nowStamp():null,inspectAt:null,_draftId:null});}
-async function syncToBackend(pdfDataUri,fname){const payload={action:"submit",formId:S.form.id,formCode:S.form.code,formTitle:S.form.title,baseName:pdfBase(),sheetRow:flattenForSheet(),inspector:S.inspector,target:S.target,draftId:S._draftId,
+async function syncToBackend(pdfDataUri,fname){const payload={action:"submit",formId:S.form.id,formCode:S.form.code,formTitle:S.form.title,formShort:S.form.short,baseName:pdfBase(),sheetRow:flattenForSheet(),inspector:S.inspector,target:S.target,draftId:S._draftId,
     startTime:inspectFull(),values:S.values,conclusion:S.conclusion,
     photos:S.photos.filter(p=>p.dataUrl).map(p=>({label:p.label,note:p.note,dataUrl:p.dataUrl,capturedAt:p.capturedAt})),signatures:S.signatures,pdf:pdfDataUri?{name:fname,dataUri:pdfDataUri}:null};
   const res=await fetch(CONFIG.SYNC_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});return res.json();}
@@ -1101,13 +1332,14 @@ function fillTxt(f,o,fl){const v=getFill(f,o,fl);return v?`<u>&nbsp;${v}&nbsp;</
 function optLine(fid,o,inline){let s=`${mk(isSel(fid,o.id))} ${o.label}`;
   if(o.fills&&isSel(fid,o.id))s+="　"+o.fills.map(fl=>`${fl.label?fl.label+"：":""}${fillTxt(fid,o.id,fl.id)}`).join("　");
   return inline?`<span style="display:inline-block;margin:0 14px 2px 0">${s}</span>`:`<div class="ol${o.indent?" ind":""}">${s}</div>`;}
-function basicValHTML(f){if(f.type==="text")return S.values[f.id]||"";
+function basicValHTML(f){if(f.type==="text"||f.type==="textarea")return (S.values[f.id]||"").replace(/\n/g,"<br>");
   if(f.type==="composite")return f.parts.map(p=>`${p.label}：${S.values[f.id+"."+p.id]||"＿＿"}`).join("、");
   if(f.type==="choice")return f.options.map(o=>optLine(f.id,o,f.inline)).join("");return "";}
 function officialFormHTML(){const F=S.form;
   let brows=`<tr><td class="lab">稽查時間</td><td colspan="3">${inspectFull()}</td></tr>`;
-  const B=F.basic;let i=0;
+  const B=F.basic.filter(fieldVisible);let i=0;
   while(i<B.length){const f=B[i];
+    if(f.type==="heading"){brows+=`<tr><td colspan="4" style="background:#e2e2e2;font-weight:700;text-align:center">${f.label}</td></tr>`;i+=1;continue;}
     if(i+1<B.length&&B[i+1].half){const g=B[i+1];brows+=`<tr><td class="lab">${f.label}</td><td>${basicValHTML(f)}</td><td class="lab">${g.label}</td><td>${basicValHTML(g)}</td></tr>`;i+=2;}
     else{brows+=`<tr><td class="lab">${f.label}</td><td colspan="3">${basicValHTML(f)}</td></tr>`;i+=1;}}
   const secRows=F.sections.map(s=>`<tr><td class="lab">${s.title}</td><td colspan="3">${s.options.map(o=>optLine(s.id,o,false)).join("")}</td></tr>`).join("");
@@ -1157,7 +1389,9 @@ function openSheet(html){$("#sheet").innerHTML=html;$("#modal").classList.add("o
 function closeSheet(){$("#modal").classList.remove("on");}
 $("#modal").onclick=e=>{if(e.target.id==="modal")closeSheet();};
 window.closeSheet=closeSheet;
-function validateStep(){if(S.step===2){const req=(S.form.basic||[]).find(f=>f.required);if(req&&!S.values[req.id]){toast("請填寫「"+req.label+"」");return false;}}return true;}
+function validateStep(){if(S.step===2){const miss=(S.form.basic||[]).filter(f=>f.required&&fieldVisible(f)&&!isFilled(f));if(miss.length){toast("請填寫「"+miss[0].label+"」");return false;}}
+  if(S.step===3){const miss=S.photos.filter(p=>p.req&&!p.dataUrl&&!(p.mode==="text"&&(p.text||"").trim()));if(miss.length){toast("尚有必拍照片未完成："+miss.map(p=>p.label).join("、"));return false;}}
+  return true;}
 $("#btnNext").onclick=()=>{if(!validateStep())return;if(S.step<5)goto(S.step+1);};
 $("#btnBack").onclick=()=>{if(S.step>0)goto(S.step-1);};
 $("#agencyLine").textContent=CONFIG.AGENCY;
