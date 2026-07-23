@@ -545,6 +545,9 @@ textarea.inp{min-height:70px;resize:vertical}
 .sighead b{font-size:14px}
 .sigpad{border:1.5px solid var(--line-d);border-radius:12px;background:#fff;touch-action:none;width:100%;height:150px;display:block}
 .sigpad.refused{opacity:.4}
+.stampbox{border:1.5px solid var(--line-d);border-radius:12px;background:var(--paper);padding:10px;text-align:center}
+.stampbox img{max-width:100%;max-height:170px;border-radius:8px}
+.stamplab{font-size:12px;color:var(--muted);margin-top:6px;font-weight:700}
 .sigtools{display:flex;gap:8px;margin-top:6px}
 .chip{font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--line-d);background:var(--card);cursor:pointer;color:var(--ink)}
 .chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
@@ -655,7 +658,7 @@ const store=(()=>{let ok=false;try{const k="__t";localStorage.setItem(k,"1");loc
 const jget=(k,d)=>{try{const v=store.get(k);return v==null?d:JSON.parse(v);}catch(e){return d;}};
 const jset=(k,v)=>store.set(k,JSON.stringify(v));
 
-const INSPECTOR_SEED=[{id:"A01",name:"翊穜",unit:"志欣環保工程",code:"1234"},{id:"A02",name:"葉承典",unit:"志欣環保工程",code:"1234"}];
+const INSPECTOR_SEED=[{id:"A01",name:"胡翊穜",unit:"志欣環保工程",code:"1234"},{id:"A02",name:"葉承典",unit:"志欣環保工程",code:"1234"}];
 function loadInspectors(){let a=jget("inspectors",null);if(!a){a=INSPECTOR_SEED;jset("inspectors",a);}return a;}
 function saveInspectors(a){jset("inspectors",a);cloudSaveInspectors(a);}
 function nextInsId(list){let mx=0;list.forEach(i=>{const m=/^A(\d+)$/.exec(i.id||"");if(m)mx=Math.max(mx,+m[1]);});return "A"+String(mx+1).padStart(2,"0");}
@@ -1025,12 +1028,75 @@ const FORM_PLASTIC6={id:"plastic6",code:"F20250721112041",category:"源頭減量
   photoSlots:[{label:"店家外觀",req:true},"門牌",{label:"稽查項目現況",req:true},"使用量／剩餘數量"],
   conclusion:["符合規定","限期改善","不符合規定"],
 };
+const FORM_PVC={id:"pvc",code:"F20250325112205",category:"源頭減量",icon:"🚱",ready:true,short:"PVC容器",
+  title:"禁用PVC食品容器販賣業者稽查作業紀錄單",basicTitle:"稽查對象基本資料",
+  basic:[
+    {id:"name",label:"名稱",type:"text",required:true},
+    {id:"phone",label:"電話",type:"text",half:true},
+    {id:"address",label:"地址",type:"text",full:true},
+    {id:"placeType",label:"場所類型",type:"choice",mode:"single",options:[
+      chip("dept","百貨公司及購物中心"),chip("hyper","量販店"),chip("super","超級市場"),chip("cvs","連鎖便利商店"),
+      chip("market","傳統市場"),chip("nightmarket","夜市攤販"),{id:"other",label:"其他",fills:[{id:"txt",label:""}]}]},
+  ],
+  sections:[
+    {id:"s1",stat:"稽查數量",title:"稽查過程（裝填限制商品不得使用含聚氯乙烯之平板包材、公告應回收容器及非平板類免洗餐具；112年7月1日起不得製造、輸入、販賣）",type:"choice",mode:"multi",options:[
+      {id:"shops",label:"稽查家數",fills:[{id:"n",label:"家"}]},
+      {id:"goods",label:"稽查商品件數",fills:[{id:"n",label:"件"}]},
+      {id:"violateShops",label:"違規使用含PVC之容器、平板包材及非平板類免洗餐具裝填食品之業者家數",fills:[{id:"n",label:"家"}]}]},
+    {id:"s2",stat:"違規商品類型",title:"違規商品類型",type:"choice",mode:"multi",options:[
+      chip("food","食品、動物食品、飼料"),chip("dairy","乳製品"),chip("season","調味品、醋、鹽"),
+      chip("oil","食用油脂"),chip("drink","飲料"),chip("water","礦泉水、純水、蒸餾水及其他供飲用之包裝水"),
+      chip("wine","酒"),chip("medwine","藥酒"),chip("amino","胺基酸類及多種維他命之內服液劑")]},
+    {id:"s3",stat:"現場稽查結果",title:"現場稽查結果",type:"choice",mode:"multi",options:[
+      chip("ok","符合規定"),chip("violate","有違規情形，違反廢棄物清理法第21條"),
+      {id:"vFill",label:"限制產品裝填使用含聚氯乙烯之平板包材、公告應回收容器及非平板類免洗餐具",indent:true},
+      {id:"vRefuse",label:"規避、妨礙或拒絕檢查",indent:true}]},
+  ],
+  extras:[],
+  opinions:[{id:"targetOpinion",label:"稽查對象意見陳述"}],
+  signatures:[{id:"inspector",label:"稽查人員"},{id:"accompany",label:"會同單位",optional:true},{id:"target",label:"稽查對象",allowRefuse:true}],
+  photoSlots:[{label:"外觀",req:true},"門牌",{label:"商品陳列",req:true},"容器材質標示"],
+  conclusion:["符合規定","有違規情形"],
+};
+const FORM_ONLINE={id:"online",code:"F20250325105242",category:"源頭減量",icon:"🛒",ready:true,short:"網購包裝",
+  title:"網際網路購物包裝限制使用稽查作業紀錄表",basicTitle:"稽查對象基本資料",
+  basic:[
+    {id:"name",label:"名稱",type:"text",required:true,full:true},
+    {id:"markType",label:"標章類型",type:"choice",mode:"single",inline:true,options:[chip("b2c","B2C"),chip("b2b2c","B2B2C、C2C"),chip("none","無標章")]},
+    {id:"phone",label:"電話",type:"text"},{id:"fax",label:"傳真",type:"text",half:true},
+    {id:"address",label:"地址",type:"text",full:true},
+    {id:"email",label:"E-mail（網址）",type:"text",full:true},
+    {id:"ownerName",label:"負責人姓名",type:"text"},
+    {id:"ownerPhone",label:"負責人電話",type:"text",half:true},
+    {id:"companyAddress",label:"公司地址",type:"text",full:true},
+  ],
+  sections:[
+    {id:"s1",stat:"抽查情形",title:"稽查結果",type:"choice",mode:"multi",options:[
+      {id:"count",label:"抽查件數",fills:[{id:"n",label:"件"}]},
+      chip("w025_1","樣品類型：0.25公斤～1公斤"),chip("w1_3","樣品類型：1～3公斤"),chip("w3up","樣品類型：3公斤以上"),
+      chip("appeal","民眾陳情品項之包裝方式")]},
+    {id:"s2",stat:"現場處理情形",title:"現場稽查及處理情形",type:"choice",mode:"multi",options:[
+      chip("ok","無違規情形"),chip("violate","有違規情形"),
+      {id:"vPvc",label:"包裝材料含有PVC材質，違反廢棄物清理法第51條第3項規定",indent:true},
+      {id:"vRecycle",label:"違反資源回收再利用法第26條第1項第2款規定",indent:true},
+      {id:"vPaper",label:"回收紙混合率未達90%以上",indent:true},
+      {id:"vPlastic",label:"塑膠類包裝箱（袋）及緩衝材未達再生料摻配比例25%以上",indent:true},
+      {id:"vWeight",label:"商品包裝材料重量比值經稽查結果判定不合格",indent:true}]},
+    {id:"s3",stat:"其他說明",title:"其他說明",type:"choice",mode:"multi",options:[
+      chip("noRecord","無七月一日後包裝材料採購紀錄"),chip("selfDoc","已建立自主管理文件"),
+      chip("mechanism","已建立符合法規的管理機制或相關記錄"),{id:"other",label:"其他",fills:[{id:"txt",label:""}]}]},
+  ],
+  extras:[],
+  opinions:[],
+  signatures:[{id:"inspector",label:"稽查人員"},{id:"accompany",label:"會同單位人員",optional:true},{id:"target",label:"限制使用對象",allowRefuse:true}],
+  photoSlots:[{label:"外箱照片",req:true},{label:"產品裝箱樣態照片含緩衝材",req:true},{label:"產品裝箱樣態照片不含緩衝材",req:true},{label:"包材陳列照片",req:true}],
+  conclusion:["無違規情形","有違規情形"],
+};
 const FORM_STUBS=[
-  ["pvc","F20250325112205","禁用PVC食品容器販賣業者稽查作業紀錄單","🚱","PVC容器"],
-  ["online","F20250325105242","網際網路購物包裝限制使用稽查作業紀錄表","🛒","網購包裝"],["noise","F20250324092010","噪音管制稽查紀錄工作單","🔊","噪音"],
+  ["noise","F20250324092010","噪音管制稽查紀錄工作單","🔊","噪音"],
   ["construct","F20250317143136","營建工程污染管制巡查紀錄表","🏗️","營建污染"],["hygiene","F20250703135543","環境衛生","🧹","環境衛生"],
 ].map(([id,code,title,icon,short])=>({id,code,title,icon,short,category:"稽查表單",ready:false}));
-const FORMS=[FORM_CUP,FORM_TOWEL,FORM_COSMETIC,FORM_BAG,FORM_COMMUNITY,FORM_MERCURY,FORM_OVERPACK,FORM_TRAY,FORM_BATTERY,FORM_PLASTIC6,...FORM_STUBS];
+const FORMS=[FORM_CUP,FORM_TOWEL,FORM_COSMETIC,FORM_BAG,FORM_COMMUNITY,FORM_MERCURY,FORM_OVERPACK,FORM_TRAY,FORM_BATTERY,FORM_PLASTIC6,FORM_PVC,FORM_ONLINE,...FORM_STUBS];
 
 const S={step:0,inspector:null,form:null,target:null,values:{},photos:[],signatures:{},conclusion:null,startTime:null,inspectAt:null,_draftId:null};
 const G={geo:null};
@@ -1210,14 +1276,33 @@ function drawStamp(ctx,w,h,lines){const fs=Math.max(15,Math.round(w/42)),padx=8,
 $("#btnAddPhoto").onclick=()=>{S.photos.push({label:"",dataUrl:null,capturedAt:null,mode:null,text:"",note:""});renderPhotos();};
 
 function renderSign(){const area=$("#signArea");area.innerHTML="";
-  S.form.signatures.forEach(sig=>{const wrap=el("div","sigwrap");wrap.innerHTML=`<div class="sighead"><b>${sig.label}${sig.optional?"（選填）":""}</b></div>`;
-    const canvas=el("canvas","sigpad");canvas.width=680;canvas.height=150;wrap.appendChild(canvas);
-    const tools=el("div","sigtools");const clr=el("button","chip","清除");tools.appendChild(clr);let rf=null;if(sig.allowRefuse){rf=el("button","chip","拒簽");tools.appendChild(rf);}
-    wrap.appendChild(tools);area.appendChild(wrap);initPad(canvas,sig.id);
-    clr.onclick=()=>{clearPad(canvas,sig.id);if(rf)rf.classList.remove("on");canvas.classList.remove("refused");};
-    if(rf)rf.onclick=()=>{const on=!rf.classList.contains("on");rf.classList.toggle("on",on);canvas.classList.toggle("refused",on);if(on){clearPad(canvas,sig.id);S.signatures[sig.id]="REFUSE";}else S.signatures[sig.id]=null;};
-    if(S.signatures[sig.id]&&S.signatures[sig.id]!=="REFUSE"){const ctx=canvas.getContext("2d"),im=new Image();im.onload=()=>ctx.drawImage(im,0,0,canvas.width,canvas.height);im.src=S.signatures[sig.id];}
-    if(S.signatures[sig.id]==="REFUSE"&&rf){rf.classList.add("on");canvas.classList.add("refused");}});}
+  S.form.signatures.forEach(sig=>{const cur=S.signatures[sig.id];const isStamp=typeof cur==="string"&&cur.indexOf("STAMP:")===0;
+    const wrap=el("div","sigwrap");wrap.innerHTML=`<div class="sighead"><b>${sig.label}${sig.optional?"（選填）":""}</b></div>`;
+    if(isStamp){const box=el("div","stampbox");box.innerHTML=`<img src="${cur.slice(6)}"><div class="stamplab">已拍店章</div>`;wrap.appendChild(box);}
+    else{const canvas=el("canvas","sigpad");canvas.width=680;canvas.height=150;wrap.appendChild(canvas);
+      const tools=el("div","sigtools");const clr=el("button","chip","清除");tools.appendChild(clr);
+      let rf=null,ns=null,st=null;
+      if(sig.allowRefuse){rf=el("button","chip","拒簽");tools.appendChild(rf);
+        ns=el("button","chip","現場人員未簽");tools.appendChild(ns);
+        st=el("button","chip","拍店章");tools.appendChild(st);}
+      wrap.appendChild(tools);area.appendChild(wrap);initPad(canvas,sig.id);
+      const clearMarks=()=>{[rf,ns].forEach(b=>{if(b)b.classList.remove("on");});canvas.classList.remove("refused");};
+      clr.onclick=()=>{clearPad(canvas,sig.id);clearMarks();};
+      if(rf)rf.onclick=()=>{const on=!rf.classList.contains("on");clearMarks();rf.classList.toggle("on",on);canvas.classList.toggle("refused",on);if(on){clearPad(canvas,sig.id);S.signatures[sig.id]="REFUSE";}else S.signatures[sig.id]=null;};
+      if(ns)ns.onclick=()=>{const on=!ns.classList.contains("on");clearMarks();ns.classList.toggle("on",on);canvas.classList.toggle("refused",on);if(on){clearPad(canvas,sig.id);S.signatures[sig.id]="NOSIGN";}else S.signatures[sig.id]=null;};
+      if(st)st.onclick=()=>pickStamp(sig.id);
+      if(cur&&cur!=="REFUSE"&&cur!=="NOSIGN"){const ctx=canvas.getContext("2d"),im=new Image();im.onload=()=>ctx.drawImage(im,0,0,canvas.width,canvas.height);im.src=cur;}
+      if(cur==="REFUSE"&&rf){rf.classList.add("on");canvas.classList.add("refused");}
+      if(cur==="NOSIGN"&&ns){ns.classList.add("on");canvas.classList.add("refused");}
+      return;}
+    const tools=el("div","sigtools");const re=el("button","chip","重新簽名／改拍");tools.appendChild(re);
+    re.onclick=()=>{S.signatures[sig.id]=null;renderSign();};
+    wrap.appendChild(tools);area.appendChild(wrap);});}
+function pickStamp(sigId){
+  const inp=document.createElement("input");inp.type="file";inp.accept="image/*";inp.style.display="none";document.body.appendChild(inp);
+  inp.onchange=async()=>{const f=inp.files[0];if(f){const url=await compressImage(f,900,.8,null);S.signatures[sigId]="STAMP:"+url;renderSign();autosaveDraft();}
+    try{document.body.removeChild(inp);}catch(e){}};
+  inp.click();}
 function initPad(canvas,id){const ctx=canvas.getContext("2d");ctx.lineWidth=2.4;ctx.lineCap="round";ctx.strokeStyle="#1f2328";let drawing=false,last=null;
   const pos=e=>{const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*canvas.width/r.width,y:(t.clientY-r.top)*canvas.height/r.height};};
   canvas.addEventListener("pointerdown",e=>{if(canvas.classList.contains("refused"))return;drawing=true;last=pos(e);e.preventDefault();});
@@ -1294,7 +1379,7 @@ function flattenForSheet(){const F=S.form,V=S.values,rows=[];
   rows.push(["照片數",S.photos.filter(p=>p.dataUrl).length]);
   rows.push(["文字說明",S.photos.filter(p=>p.mode==="text"&&(p.text||"").trim()).map(p=>`${p.label}：${p.text}`).join(" / ")]);
   return rows;}
-function pdfBase(){const abbr=sanitize(S.form.short||S.form.title).slice(0,5);const name=sanitize(S.values.name)||"稽查對象";const d=inspectRoc().replace(/\//g,"");return `${abbr}-${name}-${d}`;}
+function pdfBase(){const abbr=sanitize(S.form.short||S.form.title).slice(0,5);const name=sanitize(S.values.name)||"稽查對象";const d=inspectRoc().replace(/\//g,"");const ins=sanitize(S.inspector&&S.inspector.name);return `${abbr}-${name}-${d}${ins?"-"+ins:""}`;}
 function pdfName(){return pdfBase()+".pdf";}
 
 function renderDone(){const kv=$("#summaryKv");kv.innerHTML="";
@@ -1346,7 +1431,10 @@ function officialFormHTML(){const F=S.form;
   const exRows=(F.extras||[]).map(o=>`<tr><td class="lab">${o.label}</td><td colspan="3">${(S.values[o.id]||"").replace(/\n/g,"<br>")}</td></tr>`).join("");
   const opRows=(F.opinions||[]).map(o=>`<tr><td class="lab">${o.label}</td><td colspan="3">${(S.values[o.id]||"").replace(/\n/g,"<br>")}</td></tr>`).join("");
   const concRow=F.conclusion?`<tr><td class="lab">判定結果</td><td colspan="3"><b>${S.conclusion||""}</b></td></tr>`:"";
-  const sig=id=>{const v=S.signatures[id];if(v==="REFUSE")return`<span style="color:#c33a2e">拒簽</span>`;if(v&&v!=="REFUSE")return`<img src="${v}" style="height:44px">`;return"";};
+  const sig=id=>{const v=S.signatures[id];if(v==="REFUSE")return`<span style="color:#c33a2e">拒簽</span>`;
+    if(v==="NOSIGN")return`<span style="color:#c33a2e">現場人員未簽</span>`;
+    if(typeof v==="string"&&v.indexOf("STAMP:")===0)return`<img src="${v.slice(6)}" style="height:60px"><div style="font-size:10px;color:#555">（店章）</div>`;
+    if(v)return`<img src="${v}" style="height:44px">`;return"";};
   const sigRows=F.signatures.map(sg=>`<tr><td class="lab">${sg.label}簽名${sg.optional?"（選填）":""}</td><td colspan="3">${sig(sg.id)}</td></tr>`).join("");
   return `<div class="pdfpage"><div class="ph1">${CONFIG.AGENCY}</div><div class="ph2">${F.title}</div>
     <table class="ftab"><colgroup><col style="width:19%"><col><col style="width:13%"><col style="width:19%"></colgroup>
