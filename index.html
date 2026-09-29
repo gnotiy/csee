@@ -2950,7 +2950,7 @@ var qrcode = function() {
 }));
 </script>
 <script>
-const CONFIG={SYNC_URL:"https://script.google.com/macros/s/AKfycbzM_PDN_vLpuK9KpTBwtGL-KVL3AZoINCEwwEo3xOnQRu4P4VZwalkhzIeW_GzjsSxD/exec",UPLOAD_PDF:true,UPLOAD_PHOTOS:true,AGENCY:"嘉義市政府環境保護局",FORM_REV:"115.09"};
+const CONFIG={SYNC_URL:"https://script.google.com/macros/s/AKfycbzM_PDN_vLpuK9KpTBwtGL-KVL3AZoINCEwwEo3xOnQRu4P4VZwalkhzIeW_GzjsSxD/exec",UPLOAD_PDF:true,UPLOAD_PHOTOS:true,AGENCY:"嘉義市政府環境保護局",FORM_REV:"115.09",PDF_PT:12};
 /* ---------- 本機儲存：IndexedDB（容量大，含照片的草稿不會塞爆）；不支援時退回 localStorage ---------- */
 const KV=(()=>{const mem={};let db=null,warned=false;
   function warn(){if(warned)return;warned=true;try{toast("⚠️ 本機儲存空間不足，暫存可能沒有存到，請盡快連網上傳或刪除舊草稿");}catch(e){}setTimeout(()=>{warned=false;},20000);}
@@ -3513,14 +3513,14 @@ const pinBox=(id,ph)=>`<input class="inp pincode" id="${id}" type="password" inp
 const errBox=id=>`<div id="${id}" class="hint" style="color:var(--danger);min-height:16px"></div>`;
 /* 登入：線上由後端驗證並發 token；離線時比對本機雜湊（需曾在此裝置連網登入過） */
 function askPasscode(ins,opt){opt=opt||{};
-  openSheet(`<button class="close" onclick="closeSheet()">✕</button><h3>${esc(ins.name)}</h3><p class="sub" style="margin-bottom:14px">${opt.relogin?"登入已逾時，重新輸入登入碼後，再按一次剛才的按鈕即可":"輸入登入碼以繼續"}</p>
+  openSheet(`<button class="close" onclick="closeSheet()">✕</button><h3>${esc(ins.name)}</h3><p class="sub" style="margin-bottom:14px">${opt.relogin?"登入已逾時，請重新輸入登入碼（未完成的上傳會自動續傳；暫存草稿請再按一次）":"輸入登入碼以繼續"}</p>
     ${pinBox("pinInput")}${errBox("pinErr")}
     <button class="btn pri" style="width:100%;margin-top:6px" id="pinGo">登入</button>`);
   const inp=$("#pinInput");setTimeout(()=>inp.focus(),100);
   const done=(who,offline)=>{closeSheet();
-    if(opt.relogin){toast("已重新登入，請再按一次剛才的按鈕");return;}
+    if(opt.relogin){resumeQueue();toast("已重新登入，未完成的上傳會自動續傳");return;}
     S.inspector={id:who.id,name:who.name,unit:who.unit||"",admin:!!who.admin};S.startTime=nowStamp();
-    toast(offline?`離線登入：${who.name}（連網後可同步）`:`稽查員：${who.name}`);if(!offline)loadCloud();goto(1);};
+    toast(offline?`離線登入：${who.name}（連網後可同步）`:`稽查員：${who.name}`);if(!offline){loadCloud();resumeQueue();}goto(1);};
   const go=async()=>{const pin=inp.value.trim();if(!pin)return;const btn=$("#pinGo");btn.disabled=true;btn.innerHTML='<span class="spin"></span> 驗證中…';
     const r=await api("login",{id:ins.id,pin},{noAuth:true});btn.disabled=false;btn.textContent="登入";
     if(r&&r.ok){jset("auth_"+ins.id,{token:r.token,exp:r.exp,h:offHash(ins.id,pin)});S.token=r.token;return done(r.inspector,false);}
@@ -3585,7 +3585,7 @@ function editInspector(ins,pin,auth){let admFlag=!!auth.isAdminFlag;
     if(!r)return err("無法連線");if(!r.ok)return err(r.error||"刪除失敗");
     jset("inspectors",r.inspectors);KV.del("auth_"+ins.id);closeSheet();renderInspectors();toast(`已刪除：${ins.name}`);};}
 
-$("#btnLogout").onclick=()=>{if(S.inspector){if(S.token)api("logout",{token:S.token},{noAuth:true});const c=jget("auth_"+S.inspector.id,null);if(c){delete c.token;jset("auth_"+S.inspector.id,c);}}
+$("#btnLogout").onclick=()=>{const pend=qGet().length;if(pend&&!confirm(`還有 ${pend} 筆稽查正在上傳，登出後會暫停，下次同一位稽查員登入會自動續傳。確定登出？`))return;if(S.inspector){if(S.token)api("logout",{token:S.token},{noAuth:true});const c=jget("auth_"+S.inspector.id,null);if(c){delete c.token;jset("auth_"+S.inspector.id,c);}}
   S.inspector=null;S.token=null;CLOUD.drafts=[];CLOUD.records=[];CLOUD.loaded=false;resetSession();goto(0);};
 
 function renderForms(q=""){const box=$("#formList");box.innerHTML="";
@@ -3773,7 +3773,11 @@ function openRecords(tab){const drafts=mergeDrafts();const useCloud=CLOUD.loaded
       delb.onclick=async()=>{if(!armed){armed=true;delb.textContent="再按一次刪除";return;}
         jset(draftsKey(),jget(draftsKey(),[]).filter(x=>x._draftId!==d._draftId));CLOUD.drafts=CLOUD.drafts.filter(x=>x._draftId!==d._draftId);
         await cloudDeleteDraft(d._draftId);openRecords("drafts");};body.appendChild(it);});
-  }else{if(!recs.length){body.innerHTML=`<div class="empty">尚無已完成紀錄</div>`;return;}
+  }else{const pend=qGet();
+    if(pend.length){body.appendChild(el("div","hint",`背景上傳中／待上傳 ${pend.length} 筆`));
+      pend.forEach(j=>{const it=el("div","recitem",`<b>${esc(j.name)}<span class="src">待上傳</span></b><small>${esc(upStatusText(j))}</small><div class="ops"><button class="p">立即重試</button></div>`);
+        it.querySelector("button").onclick=()=>{resumeQueue();toast("重試中…");closeSheet();};body.appendChild(it);});}
+    if(!recs.length){body.appendChild(el("div","empty","尚無已完成紀錄"));return;}
     recs.forEach(rc=>{const it=el("div","recitem",`<b>${esc(rc.title)}<span class="src">${useCloud?"雲端":(rc.synced?"已上傳":"未上傳")}</span></b><small>${esc(rc.name)}・${esc(rc.conclusion||"")}・${esc(rc.savedAt)}</small><div class="ops">${rc.pdfUrl?`<button class="p" data-r="pdf">雲端 PDF</button>`:""}${rc.viewKey&&CONFIG.SYNC_URL?`<button data-r="qr">QR Code</button>`:""}${rc.snap?`<button data-r="regen">重新產 PDF</button>`:""}</div>`);
       const pb=it.querySelector('[data-r="pdf"]');if(pb)pb.onclick=()=>window.open(rc.pdfUrl,"_blank");
       const qb=it.querySelector('[data-r="qr"]');if(qb)qb.onclick=()=>showQR(viewUrlOf(rc.viewKey),rc.name||rc.title);
@@ -3807,34 +3811,74 @@ function renderDone(){const kv=$("#summaryKv");kv.innerHTML="";
   $("#doneResult").innerHTML=`<div class="banner"><span>ℹ️</span><div>${CONFIG.SYNC_URL?"完成後產出單一 PDF（稽查單＋照片），並同步至 Google Sheet／Drive，任何裝置皆可查閱。":"尚未設定同步端點，將只在本機產 PDF。"}</div></div>
     <button class="btn pri" style="width:100%" id="btnFinish">產出 PDF 並同步</button><div id="finishOut" style="margin-top:16px"></div>`;
   $("#btnFinish").onclick=finish;}
-async function finish(){const btn=$("#btnFinish");btn.disabled=true;btn.innerHTML='<span class="spin"></span> 產出中…';
-  try{const pdf=await buildPDF();const blob=pdf.output("blob");const url=URL.createObjectURL(blob);const fname=pdfName();let synced=false,pdfLink=null,why="";
-    if(CONFIG.SYNC_URL){btn.innerHTML='<span class="spin"></span> 上傳中…（照片多時較久，請勿關閉）';
-      const res=await syncToBackend(CONFIG.UPLOAD_PDF?pdf.output("datauristring"):null,fname);
-      if(res&&res.ok){synced=true;pdfLink=res.pdfUrl||null;}
-      else if(res&&res.auth===false)why="auth";
-      else why=res?(res.error||"伺服器錯誤"):"無法連線";}
-    const recs=jget(recordsKey(),[]).filter(x=>x.recordId!==S._draftId);
-    recs.unshift({recordId:S._draftId,title:S.form.title,name:S.values.name||"",conclusion:S.conclusion,savedAt:inspectFull(),synced,pdfUrl:pdfLink,viewKey:S.viewKey,snap:snapshot()});jset(recordsKey(),recs.slice(0,20));
-    if(synced){removeDraft();CLOUD.drafts=CLOUD.drafts.filter(x=>x._draftId!==S._draftId);}else autosaveDraft();
-    const vurl=viewUrlOf(S.viewKey),qTitle=S.values.name||S.form.title;
-    const msg=synced?"已上傳雲端並寫入彙整表":"PDF 已在本機產出；"+(why==="auth"?"登入已逾時，重新登入後按「重新上傳」即可":(CONFIG.SYNC_URL?`上傳失敗（${esc(why)}），草稿已保留，有訊號時按「重新上傳」，或之後從草稿開啟再送出`:""));
-    $("#finishOut").innerHTML=`<div class="result"><div class="big">${synced?"✅":"📄"}</div><h3>稽查完成</h3><p>${msg}</p>
-      ${vurl?`<div class="card" style="padding:14px;margin:0 auto 14px;max-width:300px"><img src="${qrDataUrl(vurl,6)}" style="width:190px;image-rendering:pixelated"><div class="hint">請受稽查對象掃描取得電子檔${synced?"":"（上傳完成後才能下載）"}</div><button class="chip" id="qrBig" style="margin-top:8px">放大／分享</button></div>`:""}
-      <div><a class="linkbtn" download="${esc(fname)}" href="${url}">⬇️ 下載 PDF</a>${pdfLink?`<a class="linkbtn" target="_blank" href="${esc(pdfLink)}">☁️ 雲端 PDF</a>`:""}${!synced&&CONFIG.SYNC_URL?`<a class="linkbtn" href="#" id="retry">🔁 重新上傳</a>`:""}</div>
-      <div style="margin-top:20px"><button class="btn gho" id="again" style="padding:12px 26px">＋ 開始新的稽查</button></div></div>`;
+/* ---------- 背景上傳佇列：存在 IndexedDB，關掉網頁下次登入會自動續傳 ---------- */
+const UQ={running:false,timer:null,asked:false};
+const qKey=id=>"upq_"+id;
+function qGet(id){id=id||(S.inspector&&S.inspector.id);return id?jget(qKey(id),[]):[];}
+function qSave(job,id){jset(qKey(id),qGet(id).map(j=>j.id===job.id?job:j));}
+function qDel(jobId,id){jset(qKey(id),qGet(id).filter(j=>j.id!==jobId));}
+function setRecord(id,recId,patch){const k="records_"+id;jset(k,jget(k,[]).map(r=>r.recordId===recId?Object.assign(r,patch):r));}
+function upStatusText(job){if(!job)return"✅ 已上傳雲端並寫入彙整表";
+  if(job.state==="auth")return"⚠️ 登入已逾時，重新登入後會自動續傳";
+  if(!job.submitted)return job.err?`⏳ 暫時無法上傳（${job.err}），有網路時自動重試`:"☁️ 背景上傳 PDF 與彙整表中…";
+  const n=job.photos.length,d=job.photoDone.length;
+  return job.err?`⏳ PDF 已上傳；照片原檔 ${d}/${n}，等待重試（${job.err}）`:`☁️ PDF 已上傳，照片原檔上傳中 ${d}/${n}`;}
+function paintUp(){const st=$("#upStatus");if(!st||!S.inspector)return;const id=st.dataset.id;const job=qGet().find(j=>j.id===id);
+  st.textContent=upStatusText(job);
+  const rec=jget(recordsKey(),[]).find(r=>r.recordId===id);const lk=$("#upPdf");if(lk&&rec&&rec.pdfUrl){lk.href=rec.pdfUrl;lk.style.display="";}
+  const rt=$("#upRetry");if(rt)rt.style.display=job&&(job.err||job.state==="auth")?"":"none";
+  const hint=$("#qrHint");if(hint)hint.textContent="請受稽查對象掃描取得電子檔"+(rec&&rec.pdfUrl?"":"（上傳完成後即可下載）");}
+function resumeQueue(){if(!S.inspector)return;jset(qKey(S.inspector.id),qGet().map(j=>{delete j.state;j.err="";return j;}));UQ.asked=false;runQueue();}
+async function runQueue(){if(UQ.running||!S.inspector||!S.token||!CONFIG.SYNC_URL)return;UQ.running=true;const insId=S.inspector.id;clearTimeout(UQ.timer);
+  try{while(S.inspector&&S.inspector.id===insId&&S.token){
+      const job=qGet(insId).find(j=>j.state!=="auth"&&!j._paused);if(!job)break;let r;
+      if(!job.submitted){r=await api("submit",job.payload);
+        if(r&&r.ok){job.submitted=true;job.folderId=r.folderId||"";job.payload=null;job.err="";setRecord(insId,job.id,{pdfUrl:r.pdfUrl||null});}}
+      else{const todo=job.photos.map((p,i)=>i).filter(i=>job.photoDone.indexOf(i)<0);
+        if(todo.length){const batch=todo.slice(0,2);
+          r=await api("uploadPhotos",{draftId:job.id,folderId:job.folderId,baseName:job.baseName,photos:batch.map(i=>({i,label:job.photos[i].label,dataUrl:job.photos[i].dataUrl}))});
+          if(r&&r.ok){(r.saved||batch).forEach(i=>{if(job.photoDone.indexOf(i)<0)job.photoDone.push(i);});if(r.folderId)job.folderId=r.folderId;job.err="";}}
+        else r={ok:true};}
+      if(!r){job.err="無網路";qSave(job,insId);break;}
+      if(r.auth===false){job.state="auth";qSave(job,insId);
+        if(!UQ.asked&&!$("#modal").classList.contains("on")){UQ.asked=true;askPasscode(S.inspector,{relogin:true});}break;}
+      if(!r.ok){job.err=r.error||"伺服器錯誤";qSave(job,insId);break;}
+      if(job.submitted&&job.photoDone.length>=job.photos.length){qDel(job.id,insId);setRecord(insId,job.id,{synced:true});toast(`✅ 已上傳完成：${job.name}`);}
+      else qSave(job,insId);
+      paintUp();}
+  }finally{UQ.running=false;paintUp();}
+  if(S.inspector&&S.inspector.id===insId&&qGet(insId).some(j=>j.state!=="auth"))UQ.timer=setTimeout(runQueue,30000);}
+window.addEventListener("online",()=>runQueue());
+window.addEventListener("beforeunload",e=>{if(S.inspector&&qGet().length){e.preventDefault();e.returnValue="";}});
+
+function buildSubmitPayload(pdfDataUri,fname,photoCount){return{formId:S.form.id,formCode:S.form.code,formTitle:S.form.title,formShort:S.form.short,baseName:pdfBase(),sheetRow:flattenForSheet(),draftId:S._draftId,viewKey:S.viewKey,
+  startTime:inspectFull(),values:S.values,conclusion:S.conclusion,photoCount,pdf:pdfDataUri?{name:fname,dataUri:pdfDataUri}:null};}
+
+/* 完成：產出 PDF 後立刻顯示完成畫面與 QR，上傳交給背景佇列 */
+async function finish(){const btn=$("#btnFinish");btn.disabled=true;btn.innerHTML='<span class="spin"></span> 產出 PDF 中…';
+  try{const pdf=await buildPDF();const url=URL.createObjectURL(pdf.output("blob"));const fname=pdfName();
+    const id=S._draftId,name=S.values.name||"";
+    const recs=jget(recordsKey(),[]).filter(x=>x.recordId!==id);
+    recs.unshift({recordId:id,title:S.form.title,name,conclusion:S.conclusion,savedAt:inspectFull(),synced:false,pdfUrl:null,viewKey:S.viewKey,snap:snapshot()});jset(recordsKey(),recs.slice(0,20));
+    if(CONFIG.SYNC_URL){const photos=CONFIG.UPLOAD_PHOTOS?S.photos.filter(p=>p.dataUrl).map(p=>({label:p.label,dataUrl:p.dataUrl})):[];
+      const q=qGet().filter(j=>j.id!==id);
+      q.push({id,name:name||S.form.title,baseName:pdfBase(),payload:buildSubmitPayload(CONFIG.UPLOAD_PDF?pdf.output("datauristring"):null,fname,photos.length),photos,photoDone:[],submitted:false,err:""});
+      jset(qKey(S.inspector.id),q);}
+    removeDraft();CLOUD.drafts=CLOUD.drafts.filter(x=>x._draftId!==id);
+    const vurl=viewUrlOf(S.viewKey),qTitle=name||S.form.title;
+    $("#finishOut").innerHTML=`<div class="result"><div class="big">✅</div><h3>稽查完成</h3>
+      <p id="upStatus" data-id="${esc(id)}">${CONFIG.SYNC_URL?"":"PDF 已在本機產出（未設定雲端）"}</p>
+      ${vurl?`<div class="card" style="padding:14px;margin:0 auto 14px;max-width:300px"><img src="${qrDataUrl(vurl,6)}" style="width:190px;image-rendering:pixelated"><div class="hint" id="qrHint">請受稽查對象掃描取得電子檔</div><button class="chip" id="qrBig" style="margin-top:8px">放大／分享</button></div>`:""}
+      <div><a class="linkbtn" download="${esc(fname)}" href="${url}">⬇️ 下載 PDF</a><a class="linkbtn" id="upPdf" target="_blank" style="display:none">☁️ 雲端 PDF</a><a class="linkbtn" href="#" id="upRetry" style="display:none">🔁 立即重試</a></div>
+      ${CONFIG.SYNC_URL?`<p class="hint" style="margin-top:12px">上傳在背景進行，可以直接開始下一張稽查；上傳完成前請勿關閉此網頁（關掉的話，下次登入會自動續傳）。</p>`:""}
+      <div style="margin-top:16px"><button class="btn gho" id="again" style="padding:12px 26px">＋ 開始新的稽查</button></div></div>`;
     btn.style.display="none";
     const qb=$("#qrBig");if(qb)qb.onclick=()=>showQR(vurl,qTitle);
-    const rt=$("#retry");if(rt)rt.onclick=e=>{e.preventDefault();renderDone();finish();};
+    $("#upRetry").onclick=e=>{e.preventDefault();resumeQueue();};
     $("#again").onclick=()=>{resetSession();goto(1);};
-    if(why==="auth")askPasscode(S.inspector,{relogin:true});else if(!synced&&CONFIG.SYNC_URL)toast("目前無法上傳，已在本機產出，草稿保留待補傳");
-  }catch(err){console.error(err);toast("產出失敗："+err.message);btn.disabled=false;btn.textContent="重新產出 PDF 並同步";}}
+    paintUp();runQueue();
+  }catch(err){console.error(err);toast("產出失敗："+err.message);btn.disabled=false;btn.textContent="重新產出 PDF";}}
 function resetSession(){Object.assign(S,{form:null,target:null,values:{},photos:[],signatures:{},conclusion:null,startTime:S.inspector?nowStamp():null,inspectAt:null,_draftId:null,viewKey:null});}
-function syncToBackend(pdfDataUri,fname){const payload={formId:S.form.id,formCode:S.form.code,formTitle:S.form.title,formShort:S.form.short,baseName:pdfBase(),sheetRow:flattenForSheet(),draftId:S._draftId,viewKey:S.viewKey,
-    startTime:inspectFull(),values:S.values,conclusion:S.conclusion,
-    photos:CONFIG.UPLOAD_PHOTOS?S.photos.filter(p=>p.dataUrl).map(p=>({label:p.label,note:p.note,dataUrl:p.dataUrl,capturedAt:p.capturedAt})):[],
-    pdf:pdfDataUri?{name:fname,dataUri:pdfDataUri}:null};
-  return api("submit",payload);}
 
 $("#btnDraft").onclick=async()=>{if(!S.form){return;}autosaveDraft();const b=$("#btnDraft");const old=b.textContent;b.disabled=true;b.textContent="暫存中…";
   const r=await cloudSaveDraft();b.disabled=false;b.textContent=old;
@@ -3886,29 +3930,30 @@ function photoPagesHTML(){const items=S.photos.filter(p=>p.dataUrl||(p.mode==="t
       </table><div class="pfoot" style="text-align:center">判定：${S.conclusion||""}</div></div>`;}
   return pages;}
 async function buildPDF(){const {jsPDF}=window.jspdf;const holder=el("div");holder.style.cssText="position:fixed;left:-9999px;top:0;width:794px;background:#fff";
+  /* PDF 字級：A4 寬 794px，1pt = 4/3 px */{const pt=CONFIG.PDF_PT||9,px=v=>(v*4/3)+"px";holder.style.setProperty("--pdf-fs",px(pt));holder.style.setProperty("--pdf-h1",px(pt+4));holder.style.setProperty("--pdf-h2",px(pt+2));holder.style.setProperty("--pdf-foot",px(Math.max(8,pt-3)));}
   holder.innerHTML=`<style>
     .pdfpage{width:794px;min-height:1123px;padding:38px 42px;background:#fff;color:#111;font-family:'Noto Serif TC','Noto Sans TC',serif;box-sizing:border-box}
-    .ph1{text-align:center;font-weight:900;font-size:19px}.ph2{text-align:center;font-weight:700;font-size:16px;margin:2px 0 14px}
-    .ftab{width:100%;border-collapse:collapse;table-layout:fixed;font-family:'Noto Sans TC',sans-serif;font-size:12px}
+    .ph1{text-align:center;font-weight:900;font-size:var(--pdf-h1,19px)}.ph2{text-align:center;font-weight:700;font-size:var(--pdf-h2,16px);margin:2px 0 14px}
+    .ftab{width:100%;border-collapse:collapse;table-layout:fixed;font-family:'Noto Sans TC',sans-serif;font-size:var(--pdf-fs,12px)}
     .ftab td{border:1px solid #000;padding:5px 7px;vertical-align:top;line-height:1.55;word-break:break-word}
     .ftab td.lab{background:#eeeeee;font-weight:700}
     .ol{margin:1px 0}.ol.ind{margin-left:18px}
-    .pfoot{margin-top:10px;font-size:10.5px;color:#555;font-family:'Noto Sans TC',sans-serif}
-    .ptab{width:100%;border-collapse:collapse;table-layout:fixed;font-family:'Noto Sans TC',sans-serif;font-size:12px}
+    .pfoot{margin-top:10px;font-size:var(--pdf-foot,10.5px);color:#555;font-family:'Noto Sans TC',sans-serif}
+    .ptab{width:100%;border-collapse:collapse;table-layout:fixed;font-family:'Noto Sans TC',sans-serif;font-size:var(--pdf-fs,12px)}
     .ptab td{border:1px solid #000;padding:4px 6px}.pinfo{font-weight:600}
     .pcell{text-align:center;vertical-align:top;word-break:break-word}
     .pimg{height:225px;display:flex;align-items:center;justify-content:center;background:#fafafa}
     .pimg img{max-width:100%;max-height:225px;object-fit:contain}
     .ptextbox{padding:14px;text-align:center;font-size:22px;font-weight:600;line-height:1.6;color:#111}
     .pcap{font-weight:700;padding:6px 0 2px}.ptime{font-size:10px;color:#666;font-family:'JetBrains Mono',monospace;padding-bottom:4px}
-    .pnote{font-size:12.5px;color:#333;padding:2px 6px 4px;line-height:1.5}
+    .pnote{font-size:var(--pdf-fs,12.5px);color:#333;padding:2px 6px 4px;line-height:1.5}
   </style>${officialFormHTML()}${photoPagesHTML()}`;
   document.body.appendChild(holder);const pages=$$(".pdfpage",holder),pdf=new jsPDF("p","mm","a4"),W=210,H=297;
   /* 內容超過一頁 A4 時，在表格列的交界處切頁（不再壓扁成一頁） */
   let n=0;
-  for(let i=0;i<pages.length;i++){const pg=pages[i];const canvas=await html2canvas(pg,{scale:2,useCORS:true,backgroundColor:"#ffffff"});
+  for(let i=0;i<pages.length;i++){const pg=pages[i];const canvas=await html2canvas(pg,{scale:1.5,useCORS:true,backgroundColor:"#ffffff"});
     const pr=pg.getBoundingClientRect(),sc=canvas.width/pr.width,mm=canvas.width/W;
-    const cuts=[...pg.querySelectorAll("tr")].map(r=>Math.round((r.getBoundingClientRect().bottom-pr.top)*sc)).sort((a,b)=>a-b);
+    const cuts=[...pg.querySelectorAll("tr, .ol")].map(r=>Math.round((r.getBoundingClientRect().bottom-pr.top)*sc)).sort((a,b)=>a-b);
     const kids=[...pg.children].map(c=>c.getBoundingClientRect().bottom);
     const contentEnd=Math.min(canvas.height,Math.round(((kids.length?Math.max(...kids):pr.bottom)-pr.top+40)*sc));
     let y=0,part=0;
@@ -3918,7 +3963,7 @@ async function buildPDF(){const {jsPDF}=window.jspdf;const holder=el("div");hold
       else{end=Math.min(contentEnd,y+avail);if(end<contentEnd){const c=cuts.filter(v=>v>y+avail*.4&&v<=end).pop();if(c)end=c;}}
       const hpx=end-y;const src=document.createElement("canvas");src.width=canvas.width;src.height=hpx;
       const cx=src.getContext("2d");cx.fillStyle="#fff";cx.fillRect(0,0,src.width,hpx);cx.drawImage(canvas,0,y,canvas.width,hpx,0,0,canvas.width,hpx);
-      if(n++>0)pdf.addPage();pdf.addImage(src.toDataURL("image/jpeg",.85),"JPEG",0,top,W,hpx/mm);
+      if(n++>0)pdf.addPage();pdf.addImage(src.toDataURL("image/jpeg",.8),"JPEG",0,top,W,hpx/mm);
       y=end;part++;if(part===1&&contentEnd<=avail)break;}}
   document.body.removeChild(holder);return pdf;}
 
