@@ -2950,7 +2950,7 @@ var qrcode = function() {
 }));
 </script>
 <script>
-const CONFIG={SYNC_URL:"https://script.google.com/macros/s/AKfycbzM_PDN_vLpuK9KpTBwtGL-KVL3AZoINCEwwEo3xOnQRu4P4VZwalkhzIeW_GzjsSxD/exec",UPLOAD_PDF:true,UPLOAD_PHOTOS:true,AGENCY:"嘉義市政府環境保護局",FORM_REV:"115.09",PDF_PT:12};
+const CONFIG={SYNC_URL:"https://script.google.com/macros/s/AKfycbzM_PDN_vLpuK9KpTBwtGL-KVL3AZoINCEwwEo3xOnQRu4P4VZwalkhzIeW_GzjsSxD/exec",UPLOAD_PDF:true,UPLOAD_PHOTOS:true,AGENCY:"嘉義市政府環境保護局",FORM_REV:"115.09",PDF_PT:12,VIEW_DAYS:15};
 /* ---------- 本機儲存：IndexedDB（容量大，含照片的草稿不會塞爆）；不支援時退回 localStorage ---------- */
 const KV=(()=>{const mem={};let db=null,warned=false;
   function warn(){if(warned)return;warned=true;try{toast("⚠️ 本機儲存空間不足，暫存可能沒有存到，請盡快連網上傳或刪除舊草稿");}catch(e){}setTimeout(()=>{warned=false;},20000);}
@@ -3745,7 +3745,7 @@ function needRelogin(){closeSheet();setTimeout(()=>askPasscode(S.inspector,{relo
 
 function showQR(url,title){
   openSheet(`<button class="close" onclick="closeSheet()">✕</button><h3>${esc(title||"稽查紀錄")}</h3>
-    <p class="sub">請受稽查對象用手機相機掃描，即可開啟／下載本次稽查紀錄 PDF。</p>
+    <p class="sub">請受稽查對象用手機相機掃描，即可開啟／下載本次稽查紀錄 PDF${CONFIG.VIEW_DAYS?`（自稽查日起 ${CONFIG.VIEW_DAYS} 天內有效）`:""}。</p>
     <div style="text-align:center;margin-bottom:14px"><img src="${qrDataUrl(url,8)}" style="width:260px;max-width:80vw;image-rendering:pixelated;background:#fff;padding:6px;border-radius:10px"></div>
     <div class="formrow"><button class="btn gho" id="qrCopy" style="width:100%">複製連結</button>${navigator.share?'<button class="btn gho" id="qrShare" style="width:100%">分享（LINE、簡訊…）</button>':""}</div>`);
   $("#qrCopy").onclick=async()=>{try{await navigator.clipboard.writeText(url);toast("已複製連結");}catch(e){window.prompt("複製此連結",url);}};
@@ -3827,7 +3827,7 @@ function paintUp(){const st=$("#upStatus");if(!st||!S.inspector)return;const id=
   st.textContent=upStatusText(job);
   const rec=jget(recordsKey(),[]).find(r=>r.recordId===id);const lk=$("#upPdf");if(lk&&rec&&rec.pdfUrl){lk.href=rec.pdfUrl;lk.style.display="";}
   const rt=$("#upRetry");if(rt)rt.style.display=job&&(job.err||job.state==="auth")?"":"none";
-  const hint=$("#qrHint");if(hint)hint.textContent="請受稽查對象掃描取得電子檔"+(rec&&rec.pdfUrl?"":"（上傳完成後即可下載）");}
+  const hint=$("#qrHint");if(hint)hint.textContent="請受稽查對象掃描取得電子檔"+(rec&&rec.pdfUrl?(CONFIG.VIEW_DAYS?`（${CONFIG.VIEW_DAYS} 天內有效）`:""):"（上傳完成後即可下載）");}
 function resumeQueue(){if(!S.inspector)return;jset(qKey(S.inspector.id),qGet().map(j=>{delete j.state;j.err="";return j;}));UQ.asked=false;runQueue();}
 async function runQueue(){if(UQ.running||!S.inspector||!S.token||!CONFIG.SYNC_URL)return;UQ.running=true;const insId=S.inspector.id;clearTimeout(UQ.timer);
   try{while(S.inspector&&S.inspector.id===insId&&S.token){
@@ -3916,9 +3916,7 @@ function officialFormHTML(){const F=S.form;
     <table class="ftab"><colgroup><col style="width:19%"><col><col style="width:13%"><col style="width:19%"></colgroup>
     ${brows}${secRows}${exRows}${opRows}${concRow}${sigRows}</table>
     ${pdfFootHTML()}</div>`;}
-function pdfFootHTML(){const u=viewUrlOf(S.viewKey);const left=`稽查員 ${esc(S.inspector.name)}（${esc(S.inspector.id)}）　列印時間 ${nowStamp().full}${CONFIG.FORM_REV?`　表單版本 ${CONFIG.FORM_REV}`:""}`;
-  if(!u)return `<div class="pfoot">${left}</div>`;
-  return `<div class="pfoot" style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px"><div>${left}</div><div style="text-align:center;flex:0 0 auto"><img src="${qrDataUrl(u,3)}" style="width:88px;height:88px;image-rendering:pixelated"><div style="font-size:9.5px">掃描取得本紀錄電子檔</div></div></div>`;}
+function pdfFootHTML(){return `<div class="pfoot">稽查員 ${esc(S.inspector.name)}（${esc(S.inspector.id)}）　列印時間 ${nowStamp().full}${CONFIG.FORM_REV?`　表單版本 ${CONFIG.FORM_REV}`:""}</div>`;}
 function chunk2(a){const o=[];for(let i=0;i<a.length;i+=2)o.push(a.slice(i,i+2));return o;}
 function photoPagesHTML(){const items=S.photos.filter(p=>p.dataUrl||(p.mode==="text"&&(p.text||"").trim()));if(!items.length)return"";let pages="";
   for(let i=0;i<items.length;i+=4){const g=items.slice(i,i+4);
