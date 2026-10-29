@@ -454,15 +454,16 @@ button{font-family:inherit}
 .iconbtn,.searchbox .mag,.pick .row .ico,.pslot .plus .ic{filter:grayscale(1)}
 #app{max-width:760px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;padding-bottom:96px}
 header.topbar{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--topbar) 0%,var(--topbar-2) 100%);color:var(--topbar-tx);padding:10px 14px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 10px rgba(15,16,19,.28);}
-.seal{width:38px;height:38px;flex:0 0 38px;border-radius:50%;border:2px solid #b8bcc2;display:grid;place-items:center;font-family:"Noto Serif TC",serif;font-weight:900;font-size:15px;color:#f0f1f3;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.14),transparent 60%);}
 .topbar .t{flex:1;min-width:0}
 .topbar .t b{font-family:"Noto Serif TC",serif;font-weight:700;font-size:15px;letter-spacing:.5px;display:block;line-height:1.25}
 .topbar .t span{font-size:11px;color:var(--topbar-sub);letter-spacing:2px}
 .topbar .actions{display:flex;align-items:center;gap:8px}
 .iconbtn{background:rgba(255,255,255,.14);border:0;color:var(--topbar-tx);width:36px;height:36px;border-radius:10px;font-size:16px;cursor:pointer;display:none;place-items:center}
 .iconbtn.show{display:grid}
-@media (max-width:420px){.topbar .actions .whoName span{display:none}.topbar .t b{font-size:14px;letter-spacing:0}body.li .topbar .seal{display:none}.topbar .actions .iconbtn{width:33px;height:33px}.topbar .actions{gap:6px}}
-a.iconbtn{text-decoration:none;font-weight:900;font-size:17px;font-family:system-ui,sans-serif}
+@media (max-width:420px){.topbar .actions .whoName span{display:none}.topbar .t b{font-size:14px;letter-spacing:0}.helpbtn{padding:0 9px;font-size:12px}}
+@media (max-width:380px){body.li .topbar .t b{font-size:13.5px}body.li .whoName{display:none!important}body.li .topbar .t span{letter-spacing:.5px}.topbar{gap:8px;padding:10px 10px}.topbar .actions{gap:5px}.helpbtn{padding:0 7px}.topbar .actions .iconbtn{width:33px;height:33px}.topbar .actions{gap:6px}}
+.helpbtn{background:rgba(255,255,255,.14);color:var(--topbar-tx);text-decoration:none;font-size:12.5px;font-weight:700;padding:0 11px;height:34px;border-radius:10px;display:grid;place-items:center;white-space:nowrap}
+.helpbtn:hover{background:rgba(255,255,255,.22)}
 .helplink{display:block;text-align:center;margin:18px 0 4px;font-size:13.5px;color:var(--brand);text-decoration:none;font-weight:700}
 .iconbtn:hover{background:rgba(255,255,255,.24)}
 .whoName{font-size:12px;color:var(--topbar-sub);text-align:right;line-height:1.2;display:none}
@@ -483,6 +484,20 @@ main{padding:16px}
 h2.sec{font-family:"Noto Serif TC",serif;font-size:18px;margin:2px 0 4px}
 .sub{color:var(--muted);font-size:13px;margin:0 0 16px}
 .pick{display:flex;flex-direction:column;gap:10px}
+.insgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.instile{position:relative;display:flex;align-items:center;gap:10px;padding:10px 30px 10px 10px;background:var(--card);border:1px solid var(--line);border-radius:14px;cursor:pointer;box-shadow:var(--shadow);min-width:0;transition:.15s}
+.instile:active{transform:scale(.98)}
+.instile .av{width:46px;height:46px;flex:0 0 46px;border-radius:12px;overflow:hidden;display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;letter-spacing:.5px}
+.instile .av img{width:100%;height:100%;object-fit:cover;display:block}
+.instile .nm{min-width:0}
+.instile .nm b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.instile .nm small{display:block;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.instile .gear{position:absolute;top:4px;right:4px;width:26px;height:26px;border:0;background:transparent;color:var(--muted);font-size:15px;border-radius:8px;cursor:pointer}
+.instile .gear:hover{background:var(--sel)}
+.insgrid .empty{grid-column:1/-1}
+.avedit{display:flex;align-items:center;gap:12px}
+.avedit .av{width:64px;height:64px;flex:0 0 64px;border-radius:16px;overflow:hidden;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px}
+.avedit .av img{width:100%;height:100%;object-fit:cover}
 .pick .row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:.15s;box-shadow:var(--shadow)}
 .pick .row:hover{border-color:var(--line-d);transform:translateY(-1px)}
 .pick .row .ico{width:40px;height:40px;flex:0 0 40px;border-radius:10px;background:var(--paper);display:grid;place-items:center;font-size:20px;border:1px solid var(--line)}
@@ -610,11 +625,10 @@ textarea.inp{min-height:70px;resize:vertical}
 <body>
 <div id="app">
   <header class="topbar">
-    <div class="seal">環</div>
-    <div class="t"><b>環保稽查數位紀錄系統</b><span id="agencyLine">嘉義市政府環境保護局</span></div>
+    <div class="t"><b>環保稽查數位紀錄系統</b><span id="agencyLine">志欣環保工程有限公司</span></div>
     <div class="actions">
       <div class="whoName" id="whoName"><span>稽查員</span><b id="whoNameB">—</b></div>
-      <a class="iconbtn show" id="btnHelp" href="https://gnotiy.github.io/cs/" target="_blank" rel="noopener" title="操作說明" aria-label="操作說明">?</a>
+      <a class="helpbtn" id="btnHelp" href="https://gnotiy.github.io/cs/" target="_blank" rel="noopener">操作說明</a>
       <button class="iconbtn" id="btnRecords" title="草稿與紀錄">📁</button>
       <button class="iconbtn" id="btnLogout" title="切換稽查員">⤺</button>
     </div>
@@ -623,9 +637,9 @@ textarea.inp{min-height:70px;resize:vertical}
   <main>
     <section class="screen" data-step="0" id="scr-inspector">
       <h2 class="sec">選擇稽查員</h2>
-      <p class="sub">點選後需輸入個人登入碼。名單雲端共用，各裝置一致；右側齒輪可改名／改碼／刪除。</p>
+      <p class="sub">本系統僅限<b>志欣環保工程有限公司</b>稽查人員使用。點自己的名字並輸入登入碼；名字右上角的 ⚙︎ 可改名、改碼、設定頭貼與簽名檔。</p>
       <div class="searchbox"><span class="mag">🔍</span><input id="insSearch" placeholder="搜尋姓名或員編"></div>
-      <div class="pick" id="inspectorList"></div>
+      <div class="insgrid" id="inspectorList"></div>
       <div style="margin-top:12px"><button class="addbtn" id="btnAddIns">＋ 新增稽查員</button></div>
       <a class="helplink" href="https://gnotiy.github.io/cs/" target="_blank" rel="noopener">📖 第一次使用？查看稽查員操作說明</a>
     </section>
@@ -3518,15 +3532,24 @@ function goto(step){
   if(step===3){renderPhotos();requestGeo();}if(step===4)renderSign();if(step===5)renderDone();
   if(step>=2&&S.form)autosaveDraft();window.scrollTo(0,0);
 }
+/* 頭貼：有上傳用照片，沒有就用姓名色塊 */
+const AV_COLORS=["#4a6fa5","#5b8a72","#8a6a9e","#a5744a","#4f8a95","#7a7f8a","#9a5a6a","#6b7f3e"];
+function avHTML(ins){if(ins.avatar)return`<img src="${ins.avatar}" alt="">`;const n=String(ins.name||"?");return esc(n.length>=3?n.slice(-2):n);}
+function avColor(ins){let h=0;for(const c of String(ins.id||ins.name||""))h=(h*31+c.charCodeAt(0))>>>0;return ins.avatar?"transparent":AV_COLORS[h%AV_COLORS.length];}
 function renderInspectors(q=""){const box=$("#inspectorList");box.innerHTML="";const list=loadInspectors();
   if(!list.length)box.appendChild(el("div","empty",CONFIG.SYNC_URL?"名單載入中…（第一次使用需連網）":"尚未設定雲端網址"));
-  list.filter(i=>(i.name+i.id).includes(q)).forEach(ins=>{
-    const row=el("div","row");
-    row.innerHTML=`<div class="ico">👤</div><div class="body"><b>${esc(ins.name)}</b><small>員編 ${esc(ins.id)}・${esc(ins.unit||"")}</small></div><button class="manage" title="管理">⚙︎</button>`;
-    row.querySelector(".body").onclick=()=>askPasscode(ins);
-    row.querySelector(".ico").onclick=()=>askPasscode(ins);
-    row.querySelector(".manage").onclick=e=>{e.stopPropagation();manageInspector(ins);};
-    box.appendChild(row);});}
+  list.filter(i=>(i.name+i.id+(i.unit||"")).includes(q)).forEach(ins=>{
+    const t=el("div","instile");
+    t.innerHTML=`<div class="av" style="background:${avColor(ins)}">${avHTML(ins)}</div><div class="nm"><b>${esc(ins.name)}</b><small>${esc(ins.id)}${ins.unit?"・"+esc(ins.unit):""}</small></div><button class="gear" title="管理" aria-label="管理">⚙︎</button>`;
+    t.onclick=()=>askPasscode(ins);
+    t.querySelector(".gear").onclick=e=>{e.stopPropagation();manageInspector(ins);};
+    box.appendChild(t);});}
+/* 頭貼照片 → 置中裁正方形、縮成 192px */
+async function processAvatarFile(file){
+  const url=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>rej(new Error("無法讀取檔案"));fr.readAsDataURL(file);});
+  const img=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(new Error("無法讀取圖片"));im.src=url;});
+  const m=Math.min(img.width,img.height),cv=document.createElement("canvas");cv.width=cv.height=192;
+  cv.getContext("2d").drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,192,192);return cv.toDataURL("image/jpeg",.82);}
 $("#insSearch").oninput=e=>renderInspectors(e.target.value.trim());
 const pinBox=(id,ph)=>`<input class="inp pincode" id="${id}" type="password" inputmode="numeric" maxlength="8" placeholder="${ph||"••••"}">`;
 const errBox=id=>`<div id="${id}" class="hint" style="color:var(--danger);min-height:16px"></div>`;
@@ -3582,6 +3605,8 @@ function manageInspector(ins){
 function editInspector(ins,pin,auth){let admFlag=!!auth.isAdminFlag;
   openSheet(`<button class="close" onclick="closeSheet()">✕</button><h3>編輯稽查員</h3>
     <div class="formrow">
+      <div class="avedit"><div class="av" id="edAv" style="background:${avColor(ins)}">${avHTML(ins)}</div>
+        <div class="sigtools" style="margin:0"><button class="chip" id="edAvUp">上傳頭貼</button><button class="chip" id="edAvDel"${ins.avatar?"":' style="display:none"'}>移除頭貼</button></div></div>
       <input class="inp" id="edName" value="${esc(ins.name)}" placeholder="姓名">
       <input class="inp" id="edUnit" value="${esc(ins.unit||"")}" placeholder="單位">
       ${pinBox("edCode","新登入碼（留白＝不改）")}
@@ -3595,6 +3620,13 @@ function editInspector(ins,pin,auth){let admFlag=!!auth.isAdminFlag;
       ${auth.admin?`<button class="btn danger" id="edDel" style="width:100%">刪除此稽查員</button>`:`<p class="hint">刪除稽查員需以管理員登入碼驗證。</p>`}
     </div>`);
   const err=m=>{$("#edErr").textContent=m;};
+  const saveAv=async av=>{const r=await api("setAvatar",{id:ins.id,pin,avatar:av},{noAuth:true});
+    if(!r||!r.ok){err(r?(r.error||"儲存失敗"):"無法連線，設定頭貼需要網路");return;}
+    ins.avatar=av||null;const a=$("#edAv");a.style.background=avColor(ins);a.innerHTML=avHTML(ins);$("#edAvDel").style.display=av?"":"none";err("");
+    if(r.inspectors)jset("inspectors",r.inspectors);renderInspectors();toast(av?"已更新頭貼":"已移除頭貼");};
+  $("#edAvUp").onclick=()=>{const inp=document.createElement("input");inp.type="file";inp.accept="image/*";
+    inp.onchange=async()=>{const f=inp.files[0];if(!f)return;try{await saveAv(await processAvatarFile(f));}catch(e){err(e.message);}};inp.click();};
+  $("#edAvDel").onclick=()=>saveAv("");
   const saveSig=async sig=>{const box=$("#edSigBox");box.innerHTML='<div class="stamplab">儲存中…</div>';
     const r=await api("setSignature",{id:ins.id,pin,sig},{noAuth:true});
     if(!r||!r.ok){err(r?(r.error||"儲存失敗"):"無法連線，設定簽名檔需要網路");box.innerHTML=auth.sig?`<img src="${auth.sig}">`:'<div class="stamplab">尚未設定</div>';return;}
@@ -4061,7 +4093,6 @@ function validateStep(){if(S.step===2){const miss=(S.form.basic||[]).filter(f=>f
   return true;}
 $("#btnNext").onclick=()=>{if(!validateStep())return;if(S.step<5)goto(S.step+1);};
 $("#btnBack").onclick=()=>{if(S.step>0)goto(S.step-1);};
-$("#agencyLine").textContent=CONFIG.AGENCY;
 (async()=>{await KV.init();goto(0);loadInspectorsCloud();})();
 </script>
 </body>
