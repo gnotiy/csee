@@ -461,6 +461,9 @@ header.topbar{position:sticky;top:0;z-index:20;background:linear-gradient(180deg
 .topbar .actions{display:flex;align-items:center;gap:8px}
 .iconbtn{background:rgba(255,255,255,.14);border:0;color:var(--topbar-tx);width:36px;height:36px;border-radius:10px;font-size:16px;cursor:pointer;display:none;place-items:center}
 .iconbtn.show{display:grid}
+@media (max-width:420px){.topbar .actions .whoName span{display:none}.topbar .t b{font-size:14px;letter-spacing:0}body.li .topbar .seal{display:none}.topbar .actions .iconbtn{width:33px;height:33px}.topbar .actions{gap:6px}}
+a.iconbtn{text-decoration:none;font-weight:900;font-size:17px;font-family:system-ui,sans-serif}
+.helplink{display:block;text-align:center;margin:18px 0 4px;font-size:13.5px;color:var(--brand);text-decoration:none;font-weight:700}
 .iconbtn:hover{background:rgba(255,255,255,.24)}
 .whoName{font-size:12px;color:var(--topbar-sub);text-align:right;line-height:1.2;display:none}
 .whoName.show{display:block}
@@ -611,6 +614,7 @@ textarea.inp{min-height:70px;resize:vertical}
     <div class="t"><b>環保稽查數位紀錄系統</b><span id="agencyLine">嘉義市政府環境保護局</span></div>
     <div class="actions">
       <div class="whoName" id="whoName"><span>稽查員</span><b id="whoNameB">—</b></div>
+      <a class="iconbtn show" id="btnHelp" href="https://gnotiy.github.io/cs/" target="_blank" rel="noopener" title="操作說明" aria-label="操作說明">?</a>
       <button class="iconbtn" id="btnRecords" title="草稿與紀錄">📁</button>
       <button class="iconbtn" id="btnLogout" title="切換稽查員">⤺</button>
     </div>
@@ -623,6 +627,7 @@ textarea.inp{min-height:70px;resize:vertical}
       <div class="searchbox"><span class="mag">🔍</span><input id="insSearch" placeholder="搜尋姓名或員編"></div>
       <div class="pick" id="inspectorList"></div>
       <div style="margin-top:12px"><button class="addbtn" id="btnAddIns">＋ 新增稽查員</button></div>
+      <a class="helplink" href="https://gnotiy.github.io/cs/" target="_blank" rel="noopener">📖 第一次使用？查看稽查員操作說明</a>
     </section>
     <section class="screen" data-step="1" id="scr-form">
       <h2 class="sec">選擇稽查單</h2>
@@ -3506,7 +3511,7 @@ function buildRail(){const r=$("#steprail");r.innerHTML="";STEPS.forEach((n,i)=>
 function goto(step){
   S.step=step;$$(".screen").forEach(s=>s.classList.toggle("on",+s.dataset.step===step));buildRail();
   const li=!!S.inspector;$("#whoName").classList.toggle("show",li);$("#btnRecords").classList.toggle("show",li);$("#btnLogout").classList.toggle("show",li);
-  $("#whoNameB").textContent=li?S.inspector.name:"—";
+  $("#whoNameB").textContent=li?S.inspector.name:"—";document.body.classList.toggle("li",!!li);
   $("#navbar").style.display=step===5?"none":"flex";$("#btnBack").style.display=step===0?"none":"block";$("#btnNext").textContent=step===4?"完成稽查":"下一步";
   $("#btnDraft").style.display=(step>=2&&step<5&&S.form)?"block":"none";
   if(step===0)renderInspectors();if(step===1)renderForms();if(step===2)renderFill();
